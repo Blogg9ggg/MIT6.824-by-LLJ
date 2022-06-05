@@ -5,6 +5,14 @@ import "log"
 import "net/rpc"
 import "hash/fnv"
 
+import "os"
+import "io/ioutil"
+import "encoding/json"
+import "sort"
+import "strconv"
+// import "strings"
+import "time"
+
 
 //
 // Map functions return a slice of KeyValue.
@@ -13,6 +21,14 @@ type KeyValue struct {
 	Key   string
 	Value string
 }
+
+// for sorting by key.
+type ByKey []KeyValue
+
+// for sorting by key.
+func (a ByKey) Len() int           { return len(a) }
+func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByKey) Less(i, j int) bool { return a[i].Key < a[j].Key }
 
 //
 // use ihash(key) % NReduce to choose the reduce
@@ -24,6 +40,8 @@ func ihash(key string) int {
 	return int(h.Sum32() & 0x7fffffff)
 }
 
+// like "./data/???"
+var position string
 
 //
 // main/mrworker.go calls this function.
@@ -33,38 +51,167 @@ func Worker(mapf func(string, string) []KeyValue,
 
 	// Your worker implementation here.
 
-	// uncomment to send the Example RPC to the coordinator.
-	// CallExample()
+	// create a workstation folder
+	var err error
+	err = os.Mkdir("./data", os.ModePerm)
 
+	position, err = os.MkdirTemp("./data", "*")
+	if err != nil {
+        log.Fatal(err)
+    }
+	
+	CallAskTask(mapf, reducef)
 }
 
-//
-// example function to show how to make an RPC call to the coordinator.
-//
-// the RPC argument and reply types are defined in rpc.go.
-//
-func CallExample() {
+func makeMap(reply *AskTaskReply, 
+	mapf func(string, string) []KeyValue) error {
 
-	// declare an argument structure.
-	args := ExampleArgs{}
-
-	// fill in the argument(s).
-	args.X = 99
-
-	// declare a reply structure.
-	reply := ExampleReply{}
-
-	// send the RPC request, wait for the reply.
-	// the "Coordinator.Example" tells the
-	// receiving server that we'd like to call
-	// the Example() method of struct Coordinator.
-	ok := call("Coordinator.Example", &args, &reply)
-	if ok {
-		// reply.Y should be 100.
-		fmt.Printf("reply.Y %v\n", reply.Y)
-	} else {
-		fmt.Printf("call failed!\n")
+	file, err := os.Open(reply.Position[0])
+	if err != nil {
+		return err
 	}
+	// origin file's content
+	content, err := ioutil.ReadAll(file)
+	if err != nil {
+		return err
+	}
+	file.Close()
+
+	intermediate := []KeyValue{}
+	kva := mapf(reply.Position[0], string(content))
+	intermediate = append(intermediate, kva...)
+	sort.Sort(ByKey(intermediate))
+	
+	im_groups := make([]ByKey, reply.NReduce)
+	for _, kv := range intermediate {
+		ihk := ihash(kv.Key) % reply.NReduce
+		im_groups[ihk] = append(im_groups[ihk], kv)
+	}
+
+	for i := 0; i < reply.NReduce; i++ {
+		filename := "mr-" + strconv.Itoa(reply.Id) + "-" + strconv.Itoa(i)
+		file, err = ioutil.TempFile(position, filename)
+		if err != nil {
+			return  err
+		}
+
+		enc := json.NewEncoder(file)
+		for _, kv := range im_groups[i] {
+			err = enc.Encode(&kv)
+			if err != nil {
+				return err
+			}
+		}
+		err := os.Rename(file.Name(), position + "/" + filename)
+		if err != nil {
+			return err
+		}
+		file.Close()
+	}
+
+	return nil
+}
+
+func makeReduce(reply *AskTaskReply, 
+	reducef func(string, []string) string) (pos string, err error) {
+
+	intermediate := []KeyValue{}
+	for i := 0; i < reply.NMap; i++ {
+		filename := reply.Position[i] + "/mr-" + strconv.Itoa(i) + "-" + strconv.Itoa(reply.Id)
+		file, err := os.Open(filename)
+		if err != nil {
+			return "", err
+		}
+
+		dec := json.NewDecoder(file)
+		for {
+		  	var kv KeyValue
+		  	if err := dec.Decode(&kv); err != nil {
+				break
+		  	}
+		  	intermediate = append(intermediate, kv)
+		}
+		file.Close()
+	}
+	
+	sort.Sort(ByKey(intermediate))
+
+	filename := "mr-out-" + strconv.Itoa(reply.Id)
+	file, err := ioutil.TempFile(position, filename)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	
+	i := 0
+	for i < len(intermediate) {
+		j := i + 1
+		for j < len(intermediate) && intermediate[j].Key == intermediate[i].Key {
+			j++
+		}
+		values := []string{}
+		for k := i; k < j; k++ {
+			values = append(values, intermediate[k].Value)
+		}
+		output := reducef(intermediate[i].Key, values)
+		fmt.Fprintf(file, "%v %v\n", intermediate[i].Key, output)
+		
+		i = j
+	}
+
+	filename = position + "/" + filename
+	err = os.Rename(file.Name(), filename)
+	if err != nil {
+		return "", err
+	}
+
+	return filename, nil
+}
+
+func CallAskTask(mapf func(string, string) []KeyValue, 
+	reducef func(string, []string) string) {
+
+	args := AskTaskArgs{}
+	args.Result = 0
+	reply := AskTaskReply{}
+	ok := call("Coordinator.DistributeTasks", &args, &reply)
+	
+	for {
+		args = AskTaskArgs{}
+		if ok {
+			switch reply.Flag {
+			case 1:
+				err := makeMap(&reply, mapf)
+				if err != nil {	// map error
+					args.Result = 0
+				} else {
+					args.Result = 1
+					args.Id = reply.Id
+					args.Position = position
+				}
+			case 2:
+				pos, err := makeReduce(&reply, reducef)
+				if err != nil {	// reduce error
+					args.Result = 0
+				} else {
+					args.Result = 2
+					args.Id = reply.Id
+					args.Position = pos
+				}
+			case 3:
+				time.Sleep(3*time.Second)
+				args.Result = 0
+			case 4:
+				log.Fatalf("WORKER(@%v) END.", position)
+			}
+		} else {
+			log.Fatalf("WORKER(@%v) END.", position)
+		}
+
+		reply = AskTaskReply{}
+		ok = call("Coordinator.DistributeTasks", &args, &reply)
+	}
+	
 }
 
 //
