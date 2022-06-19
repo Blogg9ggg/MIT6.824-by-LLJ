@@ -44,7 +44,7 @@ func (c *Coordinator) DistributeTasks(args *AskTaskArgs, reply *AskTaskReply) er
 	case 2:
 		lock.Lock()
 		if c.ReducedFilePos[args.Id] == "" {
-			c.ReducedFilePos[args.Id] = "./mr-out-" + strconv.Itoa(args.Id)		
+			c.ReducedFilePos[args.Id] = "./mr-out-" + strconv.Itoa(args.Id)		// <<<
 			err := os.Rename(args.Position, c.ReducedFilePos[args.Id])
 			if err != nil {
 				log.Fatalf("cannot rename %v", args.Position)
