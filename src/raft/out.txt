@@ -1,0 +1,899 @@
+Test (2B): agreement after follower reconnects ...
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 2
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 2
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 2
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 2
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 2
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 3
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 3
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 4
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 4
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 4
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 4
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 4
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 4
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 5
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 5
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 14
+args.PrevLogIndex: 5
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 5
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 4
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 4
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 2
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 5
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 2
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 14
+State: 2
+CommitInd: 5
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 3
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+--- FAIL: TestFailAgree2B (12.47s)
+    config.go:609: one(106) failed to reach agreement
+Test (2B): no agreement if too many followers disconnect ...
+--- FAIL: TestFailNoAgree2B (10.02s)
+    config.go:609: one(10) failed to reach agreement
+Test (2B): concurrent Start()s ...
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,1) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,1) (1,104) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 0
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,1) (1,104) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,1) (1,104) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,1) (1,104) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 2
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) (1,101) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 2
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) (1,101) (1,102) 
+==============================
+=============== @Start ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 2
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: 0
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 2
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 0
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendAppendEntries ===============
+ID: 1
+Term: 1
+State: 0
+CommitInd: 2
+To: 0
+Result: true
+reply.Term: 1
+args.PrevLogIndex: 1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) (1,101) (1,102) (1,103) 
+==============================
+2022/06/23 04:29:56 2: log map[1:1]; server map[1:1 2:104]
+2022/06/23 04:29:56 apply error: commit index=2 server=2 100 != server=1 104
+exit status 1
+FAIL	6.824/raft	22.966s
