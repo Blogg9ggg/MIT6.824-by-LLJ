@@ -1,899 +1,314 @@
-Test (2B): agreement after follower reconnects ...
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) (1,102) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 2
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 2
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 2
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 2
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 2
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 3
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 3
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 4
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 4
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 4
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 4
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 4
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 4
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 5
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 5
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 5
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 14
-args.PrevLogIndex: 5
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 5
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 5
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 1
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 4
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 4
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 2
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 5
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 2
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 14
-State: 2
-CommitInd: 5
-To: 2
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 3
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
-==============================
---- FAIL: TestFailAgree2B (12.47s)
-    config.go:609: one(106) failed to reach agreement
-Test (2B): no agreement if too many followers disconnect ...
---- FAIL: TestFailNoAgree2B (10.02s)
-    config.go:609: one(10) failed to reach agreement
+Test (2B): basic agreement ...
+==================
+WARNING: DATA RACE
+Write at 0x00c0001160a8 by goroutine 19:
+  6.824/raft.(*Raft).turn2Follower()
+      /home/blog/6.824/src/raft/raft.go:215 +0x4d
+  6.824/raft.(*Raft).RequestVote()
+      /home/blog/6.824/src/raft/raft.go:450 +0x172
+  runtime.call32()
+      /usr/local/go/src/runtime/asm_amd64.s:702 +0x48
+  reflect.Value.Call()
+      /usr/local/go/src/reflect/value.go:339 +0xd7
+  6.824/labrpc.(*Service).dispatch()
+      /home/blog/6.824/src/labrpc/labrpc.go:496 +0x47b
+  6.824/labrpc.(*Server).dispatch()
+      /home/blog/6.824/src/labrpc/labrpc.go:420 +0x265
+  6.824/labrpc.(*Network).processReq.func1()
+      /home/blog/6.824/src/labrpc/labrpc.go:240 +0x9c
+
+Previous read at 0x00c0001160a8 by goroutine 9:
+  [failed to restore the stack]
+
+Goroutine 19 (running) created at:
+  6.824/labrpc.(*Network).processReq()
+      /home/blog/6.824/src/labrpc/labrpc.go:239 +0x291
+  6.824/labrpc.MakeNetwork.func1.1()
+      /home/blog/6.824/src/labrpc/labrpc.go:157 +0x9c
+
+Goroutine 9 (running) created at:
+  6.824/raft.Make()
+      /home/blog/6.824/src/raft/raft.go:826 +0x584
+  6.824/raft.(*config).start1()
+      /home/blog/6.824/src/raft/config.go:322 +0xa4f
+  6.824/raft.make_config()
+      /home/blog/6.824/src/raft/config.go:97 +0x990
+  6.824/raft.TestBasicAgree2B()
+      /home/blog/6.824/src/raft/test_test.go:130 +0x50
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1439 +0x213
+  testing.(*T).Run.func1()
+      /usr/local/go/src/testing/testing.go:1486 +0x47
+==================
+==================
+WARNING: DATA RACE
+Write at 0x00c000116160 by goroutine 16:
+  6.824/raft.(*Raft).sendRequestVote()
+      /home/blog/6.824/src/raft/raft.go:513 +0x169
+  6.824/raft.(*Raft).turn2Candidate.func1()
+      /home/blog/6.824/src/raft/raft.go:251 +0x64
+
+Previous read at 0x00c000116160 by goroutine 11:
+  [failed to restore the stack]
+
+Goroutine 16 (running) created at:
+  6.824/raft.(*Raft).turn2Candidate()
+      /home/blog/6.824/src/raft/raft.go:251 +0x2f6
+  6.824/raft.(*Raft).ticker()
+      /home/blog/6.824/src/raft/raft.go:780 +0x172
+  6.824/raft.Make.func1()
+      /home/blog/6.824/src/raft/raft.go:826 +0x39
+
+Goroutine 11 (running) created at:
+  6.824/raft.Make()
+      /home/blog/6.824/src/raft/raft.go:826 +0x584
+  6.824/raft.(*config).start1()
+      /home/blog/6.824/src/raft/config.go:322 +0xa4f
+  6.824/raft.make_config()
+      /home/blog/6.824/src/raft/config.go:97 +0x990
+  6.824/raft.TestBasicAgree2B()
+      /home/blog/6.824/src/raft/test_test.go:130 +0x50
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1439 +0x213
+  testing.(*T).Run.func1()
+      /usr/local/go/src/testing/testing.go:1486 +0x47
+==================
+==================
+WARNING: DATA RACE
+Write at 0x00c000116168 by goroutine 16:
+  6.824/raft.(*Raft).turn2Leader()
+      /home/blog/6.824/src/raft/raft.go:261 +0x5d
+  6.824/raft.(*Raft).sendRequestVote()
+      /home/blog/6.824/src/raft/raft.go:520 +0x204
+  6.824/raft.(*Raft).turn2Candidate.func1()
+      /home/blog/6.824/src/raft/raft.go:251 +0x64
+
+Previous read at 0x00c000116168 by goroutine 11:
+  [failed to restore the stack]
+
+Goroutine 16 (running) created at:
+  6.824/raft.(*Raft).turn2Candidate()
+      /home/blog/6.824/src/raft/raft.go:251 +0x2f6
+  6.824/raft.(*Raft).ticker()
+      /home/blog/6.824/src/raft/raft.go:780 +0x172
+  6.824/raft.Make.func1()
+      /home/blog/6.824/src/raft/raft.go:826 +0x39
+
+Goroutine 11 (running) created at:
+  6.824/raft.Make()
+      /home/blog/6.824/src/raft/raft.go:826 +0x584
+  6.824/raft.(*config).start1()
+      /home/blog/6.824/src/raft/config.go:322 +0xa4f
+  6.824/raft.make_config()
+      /home/blog/6.824/src/raft/config.go:97 +0x990
+  6.824/raft.TestBasicAgree2B()
+      /home/blog/6.824/src/raft/test_test.go:130 +0x50
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1439 +0x213
+  testing.(*T).Run.func1()
+      /usr/local/go/src/testing/testing.go:1486 +0x47
+==================
+==================
+WARNING: DATA RACE
+Write at 0x00c000116228 by goroutine 26:
+  6.824/raft.(*Raft).turn2Follower()
+      /home/blog/6.824/src/raft/raft.go:215 +0x4d
+  6.824/raft.(*Raft).AppendEntries()
+      /home/blog/6.824/src/raft/raft.go:568 +0x164
+  runtime.call32()
+      /usr/local/go/src/runtime/asm_amd64.s:702 +0x48
+  reflect.Value.Call()
+      /usr/local/go/src/reflect/value.go:339 +0xd7
+  6.824/labrpc.(*Service).dispatch()
+      /home/blog/6.824/src/labrpc/labrpc.go:496 +0x47b
+  6.824/labrpc.(*Server).dispatch()
+      /home/blog/6.824/src/labrpc/labrpc.go:420 +0x265
+  6.824/labrpc.(*Network).processReq.func1()
+      /home/blog/6.824/src/labrpc/labrpc.go:240 +0x9c
+
+Previous read at 0x00c000116228 by goroutine 13:
+  [failed to restore the stack]
+
+Goroutine 26 (running) created at:
+  6.824/labrpc.(*Network).processReq()
+      /home/blog/6.824/src/labrpc/labrpc.go:239 +0x291
+  6.824/labrpc.MakeNetwork.func1.1()
+      /home/blog/6.824/src/labrpc/labrpc.go:157 +0x9c
+
+Goroutine 13 (running) created at:
+  6.824/raft.Make()
+      /home/blog/6.824/src/raft/raft.go:826 +0x584
+  6.824/raft.(*config).start1()
+      /home/blog/6.824/src/raft/config.go:322 +0xa4f
+  6.824/raft.make_config()
+      /home/blog/6.824/src/raft/config.go:97 +0x990
+  6.824/raft.TestBasicAgree2B()
+      /home/blog/6.824/src/raft/test_test.go:130 +0x50
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1439 +0x213
+  testing.(*T).Run.func1()
+      /usr/local/go/src/testing/testing.go:1486 +0x47
+==================
+--- FAIL: TestBasicAgree2B (0.85s)
+    testing.go:1312: race detected during execution of test
 Test (2B): concurrent Start()s ...
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,1) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,1) (1,104) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 0
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,1) (1,104) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,1) (1,104) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,1) (1,104) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 1
-To: 2
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 2
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) (1,101) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 2
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) (1,101) (1,102) 
-==============================
-=============== @Start ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 2
-To: 0
-Result: false
-reply.Term: 0
-args.PrevLogIndex: 0
-entries_len: 0
-Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 2
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 0
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) (1,101) (1,102) (1,103) 
-==============================
-=============== @sendAppendEntries ===============
-ID: 1
-Term: 1
-State: 0
-CommitInd: 2
-To: 0
-Result: true
-reply.Term: 1
-args.PrevLogIndex: 1
-entries_len: 1
-Log: (0,%!d(<nil>)) (1,1) (1,104) (1,100) (1,101) (1,102) (1,103) 
-==============================
-2022/06/23 04:29:56 2: log map[1:1]; server map[1:1 2:104]
-2022/06/23 04:29:56 apply error: commit index=2 server=2 100 != server=1 104
-exit status 1
-FAIL	6.824/raft	22.966s
+==================
+WARNING: DATA RACE
+Read at 0x00c000116468 by goroutine 78:
+  6.824/raft.(*Raft).ticker()
+      /home/blog/6.824/src/raft/raft.go:731 +0x9c
+  6.824/raft.Make.func1()
+      /home/blog/6.824/src/raft/raft.go:826 +0x39
+
+Previous write at 0x00c000116468 by goroutine 83:
+  6.824/raft.(*Raft).turn2Leader()
+      /home/blog/6.824/src/raft/raft.go:261 +0x5d
+  6.824/raft.(*Raft).sendRequestVote()
+      /home/blog/6.824/src/raft/raft.go:520 +0x204
+  6.824/raft.(*Raft).turn2Candidate.func1()
+      /home/blog/6.824/src/raft/raft.go:251 +0x64
+
+Goroutine 78 (running) created at:
+  6.824/raft.Make()
+      /home/blog/6.824/src/raft/raft.go:826 +0x584
+  6.824/raft.(*config).start1()
+      /home/blog/6.824/src/raft/config.go:322 +0xa4f
+  6.824/raft.make_config()
+      /home/blog/6.824/src/raft/config.go:97 +0x990
+  6.824/raft.TestConcurrentStarts2B()
+      /home/blog/6.824/src/raft/test_test.go:372 +0x53
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1439 +0x213
+  testing.(*T).Run.func1()
+      /usr/local/go/src/testing/testing.go:1486 +0x47
+
+Goroutine 83 (finished) created at:
+  6.824/raft.(*Raft).turn2Candidate()
+      /home/blog/6.824/src/raft/raft.go:251 +0x2f6
+  6.824/raft.(*Raft).ticker()
+      /home/blog/6.824/src/raft/raft.go:780 +0x172
+  6.824/raft.Make.func1()
+      /home/blog/6.824/src/raft/raft.go:826 +0x39
+==================
+==================
+WARNING: DATA RACE
+Write at 0x00c0001164b8 by goroutine 80:
+  6.824/raft.(*Raft).turn2Candidate()
+      /home/blog/6.824/src/raft/raft.go:230 +0x7c
+  6.824/raft.(*Raft).ticker()
+      /home/blog/6.824/src/raft/raft.go:780 +0x172
+  6.824/raft.Make.func1()
+      /home/blog/6.824/src/raft/raft.go:826 +0x39
+
+Previous read at 0x00c0001164b8 by goroutine 58:
+  6.824/raft.(*Raft).AppendEntries()
+      /home/blog/6.824/src/raft/raft.go:594 +0x60f
+  runtime.call32()
+      /usr/local/go/src/runtime/asm_amd64.s:702 +0x48
+  reflect.Value.Call()
+      /usr/local/go/src/reflect/value.go:339 +0xd7
+  6.824/labrpc.(*Service).dispatch()
+      /home/blog/6.824/src/labrpc/labrpc.go:496 +0x47b
+  6.824/labrpc.(*Server).dispatch()
+      /home/blog/6.824/src/labrpc/labrpc.go:420 +0x265
+  6.824/labrpc.(*Network).processReq.func1()
+      /home/blog/6.824/src/labrpc/labrpc.go:240 +0x9c
+
+Goroutine 80 (running) created at:
+  6.824/raft.Make()
+      /home/blog/6.824/src/raft/raft.go:826 +0x584
+  6.824/raft.(*config).start1()
+      /home/blog/6.824/src/raft/config.go:322 +0xa4f
+  6.824/raft.make_config()
+      /home/blog/6.824/src/raft/config.go:97 +0x990
+  6.824/raft.TestConcurrentStarts2B()
+      /home/blog/6.824/src/raft/test_test.go:372 +0x53
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1439 +0x213
+  testing.(*T).Run.func1()
+      /usr/local/go/src/testing/testing.go:1486 +0x47
+
+Goroutine 58 (finished) created at:
+  6.824/labrpc.(*Network).processReq()
+      /home/blog/6.824/src/labrpc/labrpc.go:239 +0x291
+  6.824/labrpc.MakeNetwork.func1.1()
+      /home/blog/6.824/src/labrpc/labrpc.go:157 +0x9c
+==================
+==================
+WARNING: DATA RACE
+Write at 0x00c0001163f8 by goroutine 57:
+  6.824/raft.(*Raft).turn2Follower()
+      /home/blog/6.824/src/raft/raft.go:217 +0x7d
+  6.824/raft.(*Raft).sendAppendEntries()
+      /home/blog/6.824/src/raft/raft.go:617 +0x235
+  6.824/raft.(*Raft).ticker.func1()
+      /home/blog/6.824/src/raft/raft.go:762 +0x64
+
+Previous read at 0x00c0001163f8 by goroutine 49:
+  6.824/raft.(*Raft).sendAppendEntries()
+      /home/blog/6.824/src/raft/raft.go:615 +0x1f3
+  6.824/raft.(*Raft).ticker.func1()
+      /home/blog/6.824/src/raft/raft.go:762 +0x64
+
+Goroutine 57 (running) created at:
+  6.824/raft.(*Raft).ticker()
+      /home/blog/6.824/src/raft/raft.go:762 +0x8c9
+  6.824/raft.Make.func1()
+      /home/blog/6.824/src/raft/raft.go:826 +0x39
+
+Goroutine 49 (finished) created at:
+  6.824/raft.(*Raft).ticker()
+      /home/blog/6.824/src/raft/raft.go:762 +0x8c9
+  6.824/raft.Make.func1()
+      /home/blog/6.824/src/raft/raft.go:826 +0x39
+==================
+==================
+WARNING: DATA RACE
+Write at 0x00c000116338 by goroutine 93:
+  6.824/raft.(*Raft).AppendEntries()
+      /home/blog/6.824/src/raft/raft.go:559 +0x344
+  runtime.call32()
+      /usr/local/go/src/runtime/asm_amd64.s:702 +0x48
+  reflect.Value.Call()
+      /usr/local/go/src/reflect/value.go:339 +0xd7
+  6.824/labrpc.(*Service).dispatch()
+      /home/blog/6.824/src/labrpc/labrpc.go:496 +0x47b
+  6.824/labrpc.(*Server).dispatch()
+      /home/blog/6.824/src/labrpc/labrpc.go:420 +0x265
+  6.824/labrpc.(*Network).processReq.func1()
+      /home/blog/6.824/src/labrpc/labrpc.go:240 +0x9c
+
+Previous read at 0x00c000116338 by goroutine 74:
+  6.824/raft.(*Raft).GetState()
+      /home/blog/6.824/src/raft/raft.go:298 +0x44
+  6.824/raft.(*config).wait()
+      /home/blog/6.824/src/raft/config.go:535 +0x269
+  6.824/raft.TestConcurrentStarts2B()
+      /home/blog/6.824/src/raft/test_test.go:423 +0x616
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1439 +0x213
+  testing.(*T).Run.func1()
+      /usr/local/go/src/testing/testing.go:1486 +0x47
+
+Goroutine 93 (running) created at:
+  6.824/labrpc.(*Network).processReq()
+      /home/blog/6.824/src/labrpc/labrpc.go:239 +0x291
+  6.824/labrpc.MakeNetwork.func1.1()
+      /home/blog/6.824/src/labrpc/labrpc.go:157 +0x9c
+
+Goroutine 74 (running) created at:
+  testing.(*T).Run()
+      /usr/local/go/src/testing/testing.go:1486 +0x724
+  testing.runTests.func1()
+      /usr/local/go/src/testing/testing.go:1839 +0x99
+  testing.tRunner()
+      /usr/local/go/src/testing/testing.go:1439 +0x213
+  testing.runTests()
+      /usr/local/go/src/testing/testing.go:1837 +0x7e4
+  testing.(*M).Run()
+      /usr/local/go/src/testing/testing.go:1719 +0xa71
+  main.main()
+      _testmain.go:95 +0x2e4
+==================
+signal: interrupt
+FAIL	6.824/raft	17.516s
