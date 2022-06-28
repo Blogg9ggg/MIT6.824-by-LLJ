@@ -120,7 +120,6 @@ func (rf *Raft) clearTimerC() {
 	}
 }
 func (rf *Raft) updateApplied() {
-	rf.allInfo("updateApplied", -1, false, -1, -1, -1)
 	for rf.commitIndex > rf.lastApplied {
 		rf.lastApplied++
 		rf.applyChan <- ApplyMsg{
@@ -131,7 +130,6 @@ func (rf *Raft) updateApplied() {
 	}
 }
 func (rf *Raft) updateCommitIndex() {
-	rf.allInfo("updateCommitIndex", -1, false, -1, -1, -1)
 	if rf.state == leader {
 		// for leader
 		cnt := 1
@@ -149,7 +147,7 @@ func (rf *Raft) updateCommitIndex() {
 }
 
 // debug
-const debug bool = false
+const debug bool = true
 func (rf *Raft) allInfo(pos string, to int, res bool, reply_term int, args_prev_log_index int, entries_len int) {
 	if debug {
 		fmt.Printf("=============== @%s ===============\n", pos)
@@ -271,7 +269,7 @@ func (rf *Raft) turn2Leader() {
 		rf.nextIndex[i] = len(rf.log)
 		rf.matchIndex[i] = 0
 	}
-	rf.log = append(rf.log, LogEntry{Term: rf.currentTerm, Data: nil})
+	// rf.log = append(rf.log, LogEntry{Term: rf.currentTerm, Data: nil})
 
 	rf.clearTimerC()
 	rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
@@ -289,7 +287,7 @@ func (rf *Raft) turn2Leader() {
 			}
 			reply := AppendEntriesReply{}
 
-			args.Entries = append(args.Entries, rf.log[rf.nextIndex[i]])
+			// args.Entries = append(args.Entries, rf.log[rf.nextIndex[i]])
 
 			go rf.sendAppendEntries(i, &args, &reply)
 		}
@@ -455,7 +453,6 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		}
 		reply.Term = rf.currentTerm
 	case follower:
-		rf.allInfo("RequestVote", -1, false, -1, -1, -1)
 		if args.Term > rf.currentTerm {
 			if is_up_to_date {
 				reply.VoteGranted = true
@@ -678,7 +675,8 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	rf.updateCommitIndex()
 
 	ok := rf.peers[server].Call("Raft.AppendEntries", args, reply)
-
+	
+	rf.allInfo("sendApendEntries", server, reply.Success, reply.Term, -1, len(args.Entries))
 	// if args.PrevLogIndex < rf.matchIndex[server] {
 	// 	// this RPC is obsolete.
 	// 	return
@@ -694,7 +692,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	if reply.Term > rf.currentTerm {
 		// reply.Success must be false
 		rf.turn2Follower(-1, reply.Term)
-		rf.senderInfo(server, reply.Success, len(args.Entries))
 		return
 	}
 
@@ -822,7 +819,8 @@ func (rf *Raft) ticker() {
 						}
 						reply := AppendEntriesReply{}
 
-						if rf.nextIndex[i] < len(rf.log) {
+						if rf.nextIndex[i] < len(rf.log) && 
+						rf.log[len(rf.log)-1].Term == rf.currentTerm {
 							args.PrevLogIndex = rf.nextIndex[i] - 1
 							args.PrevLogTerm = rf.log[args.PrevLogIndex].Term
 							for j := rf.nextIndex[i]; j < len(rf.log); j++ {
