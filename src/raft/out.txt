@@ -1,18 +1,1114 @@
-Test (2B): basic agreement ...
---- FAIL: TestBasicAgree2B (0.39s)
-    test_test.go:144: got index 2 but expected 1
-Test (2B): RPC byte count ...
---- FAIL: TestRPCBytes2B (0.65s)
-    test_test.go:173: got index 3 but expected 2
 Test (2B): agreement after follower reconnects ...
-  ... Passed --   4.2  3  110   25898    9
-Test (2B): no agreement if too many followers disconnect ...
-panic: runtime error: index out of range [-1]
+=============== @sendRequestVote ===============
+ID: 0
+Term: 1
+State: 1
+CommitInd: 0
+To: 1
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 0
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 0
+To: 1
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) 
+==============================
+=============== @sendRequestVote ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 0
+To: 2
+Result: false
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 0
+To: 1
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 1
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 1
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 1
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 1
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 1
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 1
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 2
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 2
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 2
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 1
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: 2
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 6
+State: 1
+CommitInd: 1
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 3
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 8
+State: 1
+CommitInd: 1
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 4
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 4
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 4
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 4
+To: 1
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: 2
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 10
+State: 1
+CommitInd: 1
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 5
+To: 2
+Result: true
+reply.Term: 1
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 1
+State: 0
+CommitInd: 5
+To: 1
+Result: false
+reply.Term: 10
+args.PrevLogIndex: -1
+entries_len: 5
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 10
+State: 1
+CommitInd: 1
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 10
+State: 1
+CommitInd: 1
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 11
+State: 1
+CommitInd: 1
+To: 0
+Result: false
+reply.Term: 11
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 11
+State: 1
+CommitInd: 1
+To: 2
+Result: false
+reply.Term: 11
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 11
+State: 1
+CommitInd: 1
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendRequestVote ===============
+ID: 2
+Term: 12
+State: 1
+CommitInd: 5
+To: 0
+Result: false
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendRequestVote ===============
+ID: 2
+Term: 12
+State: 1
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 12
+State: 2
+CommitInd: 5
+To: 1
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: 2
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 12
+State: 2
+CommitInd: 5
+To: 1
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: 2
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 12
+State: 2
+CommitInd: 1
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 12
+State: 2
+CommitInd: 1
+To: 2
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 12
+State: 2
+CommitInd: 5
+To: 1
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: 2
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 12
+State: 2
+CommitInd: 5
+To: 1
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: 2
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendRequestVote ===============
+ID: 1
+Term: 12
+State: 2
+CommitInd: 1
+To: 0
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: -1
+Log: (0,%!d(<nil>)) (1,101) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 12
+State: 2
+CommitInd: 5
+To: 1
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: 2
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 0
+Term: 12
+State: 2
+CommitInd: 5
+To: 1
+Result: false
+reply.Term: 0
+args.PrevLogIndex: -1
+entries_len: 2
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (1,106) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 1
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 0
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 5
+To: 0
+Result: true
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (12,106) 
+==============================
+=============== @sendApendEntries ===============
+ID: 2
+Term: 12
+State: 0
+CommitInd: 6
+To: 1
+Result: false
+reply.Term: 12
+args.PrevLogIndex: -1
+entries_len: 1
+Log: (0,%!d(<nil>)) (1,101) (1,102) (1,103) (1,104) (1,105) (12,106) 
+==============================
+panic: runtime error: index out of range [7] with length 7
 
-goroutine 451 [running]:
-6.824/raft.(*Raft).sendAppendEntries(0xc0000be480, 0x3, 0xc00017b100, 0xc000178cc0)
-	/home/blog/6.824/src/raft/raft.go:723 +0x59e
-created by 6.824/raft.(*Raft).turn2Leader
-	/home/blog/6.824/src/raft/raft.go:294 +0x45f
+goroutine 334 [running]:
+6.824/raft.(*Raft).sendAppendEntries(0xc0000e6180, 0x1, 0xc0002f0400, 0xc000076520)
+	/home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:716 +0x346
+created by 6.824/raft.(*Raft).ticker
+	/home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:830 +0x425
 exit status 2
-FAIL	6.824/raft	5.456s
+FAIL	6.824/raft	4.924s

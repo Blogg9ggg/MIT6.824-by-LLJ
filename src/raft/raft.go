@@ -147,7 +147,7 @@ func (rf *Raft) updateCommitIndex() {
 }
 
 // debug
-const debug bool = true
+const debug bool = false
 func (rf *Raft) allInfo(pos string, to int, res bool, reply_term int, args_prev_log_index int, entries_len int) {
 	if debug {
 		fmt.Printf("=============== @%s ===============\n", pos)
@@ -280,8 +280,8 @@ func (rf *Raft) turn2Leader() {
 			args := AppendEntriesArgs{
 				Term: 			tmpTerm,
 				LeaderId:		rf.me,
-				PrevLogIndex:	rf.nextIndex[i] - 1,
-				PrevLogTerm:	rf.log[rf.nextIndex[i] - 1].Term,
+				PrevLogIndex:		0,
+				PrevLogTerm:		0,
 				Entries:		[]LogEntry{},
 				LeaderCommit:	min(rf.commitIndex, rf.matchIndex[i]),
 			}
@@ -589,7 +589,7 @@ ONCE_AGAIN:
 		if args.Term < rf.currentTerm {
 			reply.Success = false
 		} else {
-			if args.PrevLogIndex == -1 {
+			if len(args.Entries) == 0 {
 				// heart beat
 				reply.Success = true
 			} else {
@@ -671,7 +671,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	if rf.state != leader {
 		return
 	}
-
+		
 	rf.updateCommitIndex()
 
 	ok := rf.peers[server].Call("Raft.AppendEntries", args, reply)
@@ -696,30 +696,29 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	}
 
 	// rf.currentTerm >= reply.Term
-	if rf.state == leader && args.PrevLogIndex != -1{
+	if rf.state == leader && len(args.Entries) != 0 {
 		// just for leader, and isn't heart beat
 		if reply.Success {
 			rf.matchIndex[server] = max(args.PrevLogIndex+len(args.Entries), rf.matchIndex[server])
 			rf.nextIndex[server] = max(rf.matchIndex[server]+1, rf.nextIndex[server])
-			
-			// rf.updateCommitIndex()
-			
 		} else {
 			rf.nextIndex[server] = min(rf.nextIndex[server], args.PrevLogIndex)
 			args = &AppendEntriesArgs{
 				Term: 			rf.currentTerm,
 				LeaderId:		rf.me,
-				PrevLogIndex:	-1,
-				PrevLogTerm:	-1,
+				PrevLogIndex:		0,
+				PrevLogTerm:		0,
 				Entries:		[]LogEntry{},
 				LeaderCommit:	min(rf.commitIndex, rf.matchIndex[server]),
 			}
 			reply = &AppendEntriesReply{}
 
-			args.PrevLogIndex = rf.nextIndex[server] - 1
-			args.PrevLogTerm = rf.log[args.PrevLogIndex].Term
-			for i := rf.nextIndex[server]; i < len(rf.log); i++ {
-				args.Entries = append(args.Entries, rf.log[i])
+			if rf.log[len(rf.log) - 1].Term == rf.currentTerm {
+				args.PrevLogIndex = rf.nextIndex[server] - 1
+				args.PrevLogTerm = rf.log[args.PrevLogIndex].Term
+				for i := rf.nextIndex[server]; i < len(rf.log); i++ {
+					args.Entries = append(args.Entries, rf.log[i])
+				}
 			}
 			
 			go rf.sendAppendEntries(server, args, reply)
@@ -805,15 +804,15 @@ func (rf *Raft) ticker() {
 				// append entries timeout
 				<- rf.timer.C
 				rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
-
+				
 				for i := 0; i < len(rf.peers); i++ {
 					if i != rf.me {
 						
 						args := AppendEntriesArgs{
 							Term: 			rf.currentTerm,
 							LeaderId:		rf.me,
-							PrevLogIndex:	-1,
-							PrevLogTerm:	-1,
+							PrevLogIndex:	rf.nextIndex[i] - 1,
+							PrevLogTerm:	rf.log[rf.nextIndex[i]-1].Term,
 							Entries:		[]LogEntry{},
 							LeaderCommit:	min(rf.commitIndex, rf.matchIndex[i]),
 						}
