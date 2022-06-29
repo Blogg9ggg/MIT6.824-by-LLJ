@@ -124,8 +124,6 @@ func TestManyElections2A(t *testing.T) {
 }
 
 func TestBasicAgree2B(t *testing.T) {
-	// return
-
 	servers := 3
 	cfg := make_config(t, servers, false, false)
 	defer cfg.cleanup()
@@ -153,8 +151,6 @@ func TestBasicAgree2B(t *testing.T) {
 // each command is sent to each peer just once.
 //
 func TestRPCBytes2B(t *testing.T) {
-	// return
-
 	servers := 3
 	cfg := make_config(t, servers, false, false)
 	defer cfg.cleanup()
@@ -279,8 +275,6 @@ func For2023TestLeaderFailure2B(t *testing.T) {
 // disconnect and re-connect.
 //
 func TestFailAgree2B(t *testing.T) {
-	// return
-
 	servers := 3
 	cfg := make_config(t, servers, false, false)
 	defer cfg.cleanup()
@@ -315,8 +309,6 @@ func TestFailAgree2B(t *testing.T) {
 }
 
 func TestFailNoAgree2B(t *testing.T) {
-	// return
-
 	servers := 5
 	cfg := make_config(t, servers, false, false)
 	defer cfg.cleanup()
@@ -368,8 +360,6 @@ func TestFailNoAgree2B(t *testing.T) {
 }
 
 func TestConcurrentStarts2B(t *testing.T) {
-	// return
-	
 	servers := 3
 	cfg := make_config(t, servers, false, false)
 	defer cfg.cleanup()
@@ -471,8 +461,6 @@ loop:
 }
 
 func TestRejoin2B(t *testing.T) {
-	// return
-
 	servers := 3
 	cfg := make_config(t, servers, false, false)
 	defer cfg.cleanup()
