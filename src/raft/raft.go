@@ -18,11 +18,11 @@ package raft
 //
 
 import (
-	// "bytes"
+	"bytes"
 	"sync"
 	"sync/atomic"
 
-	// "6.824/labgob"
+	"6.824/labgob"
 	"6.824/labrpc"
 
 	"time"
@@ -193,6 +193,7 @@ func (rf *Raft) turn2Follower(vot int, cur int) {
 		rf.votedFor = vot
 		rf.currentTerm = cur
 	}
+	rf.persist()
 	rf.mu.Unlock()
 
 	rf.clearTimerC()
@@ -208,6 +209,7 @@ func (rf *Raft) turn2Candidate() {
 	// Vote for self
 	rf.yes_vote = 1
 	rf.votedFor = rf.me
+	rf.persist()
 	rf.mu.Unlock()
 
 	// Reset election timer
@@ -299,6 +301,14 @@ func (rf *Raft) persist() {
 	// e.Encode(rf.yyy)
 	// data := w.Bytes()
 	// rf.persister.SaveRaftState(data)
+
+	buf := new(bytes.Buffer)
+	enc := labgob.NewEncoder(buf)
+	enc.Encode(rf.currentTerm)
+	enc.Encode(rf.votedFor)
+	enc.Encode(rf.log)
+	data := buf.Bytes()
+	rf.persister.SaveRaftState(data)
 }
 
 
@@ -322,6 +332,22 @@ func (rf *Raft) readPersist(data []byte) {
 	//   rf.xxx = xxx
 	//   rf.yyy = yyy
 	// }
+	
+	buf := bytes.NewBuffer(data)
+	dec := labgob.NewDecoder(buf)
+	var cTerm int
+	var vFor int
+	var lg []LogEntry
+
+	if dec.Decode(&cTerm) != nil ||
+	dec.Decode(&vFor) != nil ||
+	dec.Decode(&lg) != nil {
+	// SOMETHING ERROR
+	} else {
+		rf.currentTerm = cTerm
+		rf.votedFor = vFor
+		rf.log = lg
+	}
 }
 
 
@@ -449,6 +475,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 			reply.Term = args.Term
 			if rf.votedFor < 0 {
 				rf.votedFor = args.CandidateId
+				rf.persist()
 				reply.VoteGranted = true
 			} else {
 				reply.VoteGranted = false
@@ -564,6 +591,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		if args.Term > rf.currentTerm {
 			rf.currentTerm = args.Term
 			rf.votedFor = -1
+			rf.persist()
 		}
 
 		rf.clearTimerC()
@@ -591,6 +619,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 				rf.log = append(rf.log, args.Entries[i])
 			}
 		}
+		rf.persist()
 		reply.Success = true
 	} 
 	
@@ -602,7 +631,6 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 
 func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) {
 	rf.updateCommitIndex()
-
 	if rf.killed() {
 		return
 	}
@@ -705,6 +733,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 			Data:	command,
 		}
 		rf.log = append(rf.log, newLogEntry)
+		rf.persist()
 	}
 	rf.mu.Unlock()
 	
@@ -832,8 +861,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 
 	rf.nextIndex = make([]int, len(rf.peers))
 	rf.matchIndex = make([]int, len(rf.peers))
-
-
+	
 	// initialize from state persisted before a crash
 	rf.readPersist(persister.ReadRaftState())
 
