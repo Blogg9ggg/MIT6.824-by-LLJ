@@ -1,239 +1,157 @@
 Test (2B): basic agreement ...
-==================
-WARNING: DATA RACE
-Write at 0x00c0000f20a8 by goroutine 19:
-  6.824/raft.(*Raft).turn2Follower()
-      /home/blog/6.824/src/raft/raft.go:192 +0xea
-  6.824/raft.(*Raft).RequestVote()
-      /home/blog/6.824/src/raft/raft.go:445 +0x295
-  runtime.call32()
-      /usr/local/go/src/runtime/asm_amd64.s:702 +0x48
-  reflect.Value.Call()
-      /usr/local/go/src/reflect/value.go:339 +0xd7
-  6.824/labrpc.(*Service).dispatch()
-      /home/blog/6.824/src/labrpc/labrpc.go:496 +0x47b
-  6.824/labrpc.(*Server).dispatch()
-      /home/blog/6.824/src/labrpc/labrpc.go:420 +0x265
-  6.824/labrpc.(*Network).processReq.func1()
-      /home/blog/6.824/src/labrpc/labrpc.go:240 +0x9c
-
-Previous read at 0x00c0000f20a8 by goroutine 9:
-  [failed to restore the stack]
-
-Goroutine 19 (running) created at:
-  6.824/labrpc.(*Network).processReq()
-      /home/blog/6.824/src/labrpc/labrpc.go:239 +0x291
-  6.824/labrpc.MakeNetwork.func1.1()
-      /home/blog/6.824/src/labrpc/labrpc.go:157 +0x9c
-
-Goroutine 9 (running) created at:
-  6.824/raft.Make()
-      /home/blog/6.824/src/raft/raft.go:845 +0x576
-  6.824/raft.(*config).start1()
-      /home/blog/6.824/src/raft/config.go:322 +0xa4f
-  6.824/raft.make_config()
-      /home/blog/6.824/src/raft/config.go:97 +0x990
-  6.824/raft.TestBasicAgree2B()
-      /home/blog/6.824/src/raft/test_test.go:128 +0x50
-  testing.tRunner()
-      /usr/local/go/src/testing/testing.go:1439 +0x213
-  testing.(*T).Run.func1()
-      /usr/local/go/src/testing/testing.go:1486 +0x47
-==================
-==================
-WARNING: DATA RACE
-Write at 0x00c0000f2160 by goroutine 16:
-  6.824/raft.(*Raft).sendRequestVote()
-      /home/blog/6.824/src/raft/raft.go:515 +0x175
-  6.824/raft.(*Raft).turn2Candidate.func1()
-      /home/blog/6.824/src/raft/raft.go:233 +0x64
-
-Previous read at 0x00c0000f2160 by goroutine 11:
-  [failed to restore the stack]
-
-Goroutine 16 (running) created at:
-  6.824/raft.(*Raft).turn2Candidate()
-      /home/blog/6.824/src/raft/raft.go:233 +0x49e
-  6.824/raft.(*Raft).ticker()
-      /home/blog/6.824/src/raft/raft.go:800 +0x172
-  6.824/raft.Make.func1()
-      /home/blog/6.824/src/raft/raft.go:845 +0x39
-
-Goroutine 11 (running) created at:
-  6.824/raft.Make()
-      /home/blog/6.824/src/raft/raft.go:845 +0x576
-  6.824/raft.(*config).start1()
-      /home/blog/6.824/src/raft/config.go:322 +0xa4f
-  6.824/raft.make_config()
-      /home/blog/6.824/src/raft/config.go:97 +0x990
-  6.824/raft.TestBasicAgree2B()
-      /home/blog/6.824/src/raft/test_test.go:128 +0x50
-  testing.tRunner()
-      /usr/local/go/src/testing/testing.go:1439 +0x213
-  testing.(*T).Run.func1()
-      /usr/local/go/src/testing/testing.go:1486 +0x47
-==================
-==================
-WARNING: DATA RACE
-Write at 0x00c0000f2168 by goroutine 16:
-  6.824/raft.(*Raft).turn2Leader()
-      /home/blog/6.824/src/raft/raft.go:246 +0x84
-  6.824/raft.(*Raft).sendRequestVote()
-      /home/blog/6.824/src/raft/raft.go:518 +0x1ee
-  6.824/raft.(*Raft).turn2Candidate.func1()
-      /home/blog/6.824/src/raft/raft.go:233 +0x64
-
-Previous read at 0x00c0000f2168 by goroutine 11:
-  [failed to restore the stack]
-
-Goroutine 16 (running) created at:
-  6.824/raft.(*Raft).turn2Candidate()
-      /home/blog/6.824/src/raft/raft.go:233 +0x49e
-  6.824/raft.(*Raft).ticker()
-      /home/blog/6.824/src/raft/raft.go:800 +0x172
-  6.824/raft.Make.func1()
-      /home/blog/6.824/src/raft/raft.go:845 +0x39
-
-Goroutine 11 (running) created at:
-  6.824/raft.Make()
-      /home/blog/6.824/src/raft/raft.go:845 +0x576
-  6.824/raft.(*config).start1()
-      /home/blog/6.824/src/raft/config.go:322 +0xa4f
-  6.824/raft.make_config()
-      /home/blog/6.824/src/raft/config.go:97 +0x990
-  6.824/raft.TestBasicAgree2B()
-      /home/blog/6.824/src/raft/test_test.go:128 +0x50
-  testing.tRunner()
-      /usr/local/go/src/testing/testing.go:1439 +0x213
-  testing.(*T).Run.func1()
-      /usr/local/go/src/testing/testing.go:1486 +0x47
-==================
---- FAIL: TestBasicAgree2B (0.80s)
-    testing.go:1312: race detected during execution of test
+2022/07/04 18:36:02 me: 0, tmp: 1
+2022/07/04 18:36:03 me: 1, tmp: 1
+2022/07/04 18:36:03 me: 2, tmp: 1
+2022/07/04 18:36:04 me: 0, tmp: 2
+2022/07/04 18:36:05 me: 2, tmp: 2
+2022/07/04 18:36:05 me: 1, tmp: 2
+--- FAIL: TestBasicAgree2B (4.02s)
+    config.go:602: one(200) failed to reach agreement
 Test (2B): RPC byte count ...
-==================
-WARNING: DATA RACE
-Write at 0x00c0001c8160 by goroutine 73:
-  6.824/raft.(*Raft).sendRequestVote()
-      /home/blog/6.824/src/raft/raft.go:515 +0x175
-  6.824/raft.(*Raft).turn2Candidate.func1()
-      /home/blog/6.824/src/raft/raft.go:233 +0x64
-
-Previous read at 0x00c0001c8160 by goroutine 67:
-  6.824/raft.(*Raft).ticker()
-      /home/blog/6.824/src/raft/raft.go:787 +0x1aa
-  6.824/raft.Make.func1()
-      /home/blog/6.824/src/raft/raft.go:845 +0x39
-
-Goroutine 73 (running) created at:
-  6.824/raft.(*Raft).turn2Candidate()
-      /home/blog/6.824/src/raft/raft.go:233 +0x49e
-  6.824/raft.(*Raft).ticker()
-      /home/blog/6.824/src/raft/raft.go:800 +0x172
-  6.824/raft.Make.func1()
-      /home/blog/6.824/src/raft/raft.go:845 +0x39
-
-Goroutine 67 (running) created at:
-  6.824/raft.Make()
-      /home/blog/6.824/src/raft/raft.go:845 +0x576
-  6.824/raft.(*config).start1()
-      /home/blog/6.824/src/raft/config.go:322 +0xa4f
-  6.824/raft.make_config()
-      /home/blog/6.824/src/raft/config.go:97 +0x990
-  6.824/raft.TestRPCBytes2B()
-      /home/blog/6.824/src/raft/test_test.go:155 +0x50
-  testing.tRunner()
-      /usr/local/go/src/testing/testing.go:1439 +0x213
-  testing.(*T).Run.func1()
-      /usr/local/go/src/testing/testing.go:1486 +0x47
-==================
-==================
-WARNING: DATA RACE
-Write at 0x00c0001c8168 by goroutine 73:
-  6.824/raft.(*Raft).turn2Leader()
-      /home/blog/6.824/src/raft/raft.go:246 +0x84
-  6.824/raft.(*Raft).sendRequestVote()
-      /home/blog/6.824/src/raft/raft.go:518 +0x1ee
-  6.824/raft.(*Raft).turn2Candidate.func1()
-      /home/blog/6.824/src/raft/raft.go:233 +0x64
-
-Previous read at 0x00c0001c8168 by goroutine 67:
-  6.824/raft.(*Raft).ticker()
-      /home/blog/6.824/src/raft/raft.go:750 +0x9c
-  6.824/raft.Make.func1()
-      /home/blog/6.824/src/raft/raft.go:845 +0x39
-
-Goroutine 73 (running) created at:
-  6.824/raft.(*Raft).turn2Candidate()
-      /home/blog/6.824/src/raft/raft.go:233 +0x49e
-  6.824/raft.(*Raft).ticker()
-      /home/blog/6.824/src/raft/raft.go:800 +0x172
-  6.824/raft.Make.func1()
-      /home/blog/6.824/src/raft/raft.go:845 +0x39
-
-Goroutine 67 (running) created at:
-  6.824/raft.Make()
-      /home/blog/6.824/src/raft/raft.go:845 +0x576
-  6.824/raft.(*config).start1()
-      /home/blog/6.824/src/raft/config.go:322 +0xa4f
-  6.824/raft.make_config()
-      /home/blog/6.824/src/raft/config.go:97 +0x990
-  6.824/raft.TestRPCBytes2B()
-      /home/blog/6.824/src/raft/test_test.go:155 +0x50
-  testing.tRunner()
-      /usr/local/go/src/testing/testing.go:1439 +0x213
-  testing.(*T).Run.func1()
-      /usr/local/go/src/testing/testing.go:1486 +0x47
-==================
---- FAIL: TestRPCBytes2B (2.49s)
-    testing.go:1312: race detected during execution of test
+2022/07/04 18:36:06 me: 1, tmp: 1
+2022/07/04 18:36:07 me: 0, tmp: 1
+2022/07/04 18:36:07 me: 2, tmp: 1
+2022/07/04 18:36:08 me: 1, tmp: 2
+2022/07/04 18:36:09 me: 0, tmp: 2
+2022/07/04 18:36:09 me: 2, tmp: 2
+--- FAIL: TestRPCBytes2B (4.01s)
+    config.go:602: one(BYWTAB_ZiC6kggL-RzH4GRXF5C2SrEITjo88oQySjzEeXSyt11ms5UbHYqMbDyCZwSMx7wPcxiIlbQihZjUdGiZp2tmZ82TQlmXLdxCfzNCodnrsc6ZERZE5SZeQN02uqQUwcUuP_2mxUvmeER9LUiQIojX1GddxBI2ZcSJpzO4I2WtjldL2aLZyIKMPKFm2PWT6t9-wH1Mvf3ycwy9-FC7QUEuK4tEEW8H6h-lCFCupkWN-D3nfnT-Rqrk6GI6Wo3UasAd1Os3aUIv7UvW6VfZDqqFaby_hwgaCLDiamaClxHEmPKQyfa6ChW4yFLCpfe8c2J7iGp_xREx_h1NIct-9LMUUwRNP4hLZlXxcU32JKWZGACMy9zRjKKbtJOCkJX2SV9NshZ10YAe5cMNHusDc0DarjZHXs7qOTbktFGEQonagwvzIrI6l8h5PlwG_B4ftE7dMuYCiKRsqPW-5YVBA93ChdlguJ5ewNYG-4SQ7xeMI94JO5KVqLn1UBKgPYmALbR07cWN9taJMXFGR6PWVn8zdW9lCDD-nwvRkjV9nNHSl3BNJdQY8v2eV5GdpDNzAWa2ypH9vK4jyjMxl-iqQM4aTJ3FskNW3zYGzhaVMB_kAArrrooJzTVj2jx-GTnoO8Pczi7WdxSKWtw0dY0fL5k0D7QkdC5ic4oszaFVAvSyVX94RW3NWrmufw2qEoMUt13sVhiVBOrV_Ea0ygEQaQitro2qydpE5QdGkAHsIL41VyWiUwLI1bNTK84F8S60act9tnkoaWcbfVcVWOg31uxpTAoiKUmHjt_t_y4Lt9nm1sjTRvVpfgZh-ItnydfGZEt3H98peM-ge63jxVGfKGOvMDOO-nuE7JVrbkLu_f_-mS3DL1EmEyZ7HrU8y-gNlCN650hgMlREUvYZ1HFR3dsigHDrl8QvKA2OLwqaUY2zmJ6ygRlGKkdgo9euplnAZUY3D6cKAZ2tC94KN-fmFWS4vAK4YYUL7B8Q8LfQIUAkSLo75g4t40JD0bZV_gNSEUMC41bnHNm30ZcKbf946OdratQ8NRBFUadOWhlLXkMJVxNdcvfcRsjMLnFxaJee9-gyI2QhfOmqGKLKSlX2PSKbl5MRwmL_8yXp7VTNCpgHP-WQ1Ddacza62l-d8fiTBgb9K-1HXAyXjspAik0sZUW_R8iaei9IRhRZoeDGDyn1BB6I6O7N7Cb_dzau4Jhc4X4CGk1D1ztsdvRaLFrk-rS7Lkf2HGmPVzSEHqUHp2teqrlS9eqYqRdYJI2BWCdt7jxMuWhx02cPyUHGWFtI9EMKxc9WnN9hTbcm8WoXot2hCjZcX8prQwxmLfFh-ztzKE8oy-blB4W8IR_sw4C5426kzKhEvfcllnEND1XuT1hihrNV3Q8Ed3Z9iRqO_ZcH1GvSVbNb9lx1F-Nh3-kem6BCtvXbjrsFpPgBz_LO29mCIQMjh3gdc4QxxPGrQS83idQe4zrj9MRNETmlhV0xbmfGrUqERbPJCErmr9NyC8zWVys4p_3nlJPIb8hT1poktA2e6owi42NESQXBqJ09F0NtUCtwGxh7IJvmQX00dSvf7xVEQ-5TzLC71EE_FT0HRCEygnVERgKN3ewnrM89vLI95Bp82MkptfM1qyllYBIyPaf_jLXlNk2tYW-i8lsXnVfz-_HXMN7-FmldhMk7_xNlQM_6epm1MZndaDQTwI83up2gqYxhQwoooUhuUCmMOC4knRAbRCnHTTB1SYp86O64fw4KDIejV3-36Bjhbc4RVTFZJ9Y3hjWr4D4to9W4BxmEAQ6uCitrDZyAo6lgaUNWOr-1lLje_6nx6JnYMeSAjEKx1LPqYBxmHkZiRDuLBhcQABvVuDxhTttb1gphYYmUJS0tHfXhpCiAadmcswDpmah6SRHCnAkn_LNMMS7tL19QcscNnLoQhgHG7SBweO14As-KD1FNm-mgLC3BCmygrgPyYzZTZ9SSN9rxzB1YiuN5GyxEVVAwfmQDGUU7iSEDPPsuoo7NdXfh7Saps3reRTnjzLeoMYYGrssdkOBHV-0SEY0wJdWqvwqagtNGkQVdDyqQ4-0hJ1RWdpGnbkJUuHR7TaO8w-bDjrWjRtT3QEjTYFfQuFOr0hNwd9e3U-wEcHYR-4bcqVt9DzEGt29dkHz7jvP1N_V7r2Ur_c7eeBGvhpxs9DQHv_UMe7zDKTo4Ek3GVJATwkuOC1vkXTCJGZN8ttAdCxqMUgDXy95EX45W6wRI1rwUAWjuBSwkWwgQKXsXiHskRSscGZ2-hIDim22KwIh05McoRgfb60Xp6RdCWhWKWFShrUmgKunwKM5fC7Jk6yrHrR999tG6_LDxOQN8hrNmBMDX-Q428GVeb2OLaRWithnjkB1NJS6tZPk2fQqCGIEXu29X4s5-QWjoHYmawdaUpir2R8JwEEh_ueVkHtqNhGORGbRXeFD5-hnRHLiF8ugj1ktzCY5EZtrbyJgdvJorGs_FhkZixEOAvpm-7LIo_-jHjanOTYA1l1v0XY9SRVCrlh_AdbI6TMPCjvTnUh47TpLEJvn_lB1PBcEGqNnOBZwdj3e96h5Opr24iIyEjD_MFTMy_rF0_HMvWdpgbD4j20FbOFobTW7VGKwL_v1jP2VLDbbea3FCaazbTNsUvy7mvL6GGNwkCG_sWF2s1Zp6ZUix3Hw9xeeaYZqG32-IgBcDZv_lmqHq3VtMPmzwUFw0aOKsyky58VWKtJzSVXGTBRI-9C0kszrZp81ItF5u8NliDqiC-8bbQZECyiLY1FiuDLkaiD95lOGGloRL9WLMpMHh7wQNPSr1BBdD7TXH1VbiioI9NOiBvu9BJ4rCwbxZrX3la3JfYlydt0czU89KDxHl9phzZ65DNY7jiTXe76SZLXzYYR7dVM4UbHIax1YrNsyg4OIc40O8a8FHaNj8kOjNjndcy_PascHJ8cDSNVDBrZeaWXgF9SxX0dzHyvNZKbnJyUBCWJy-EWFCFn3DlKs2sNCYAc3MzZl9xsU__yvbcLIGAhgRjDL3h8vXaR0krIooAtZEkg_tvxf5IofTfXRQ0pjASo461EmB2DOZ4X6z7WBPyA3ywXKkRnIRFfCJuqXyfKCxU_ml63PncsT2tyAQ93YyALlYPp_pUUB5ivsirDY6WdHNgtO7UZj_P90Q0FH1kYvNdTCnos5-DHQPQvgcLkNAwvzw5wGed7lfJ0QRPdPW5CSu3GhGrRk_2LW-FvveL4O20jTaucwNe2V6nFHibAc3KXoahUqryRcCoQcziStUVRLOtt0UzyhYmVao5ShOKZ9uSfa842XyfF7sxCWnJocetrz_yNWmY6kIx93dIpGXLo2S3IPnmRmBJc-jAozDFOD4OnnlCHRQLR27c06pEjp0tIwU6EgEzyxn0S_WOZpHZkI2T9ZMVkXKPzDPTp19mGVbXTnzeLW-ypp1F4X6USd4F_qNeEPE0HigZWcWqviaEBYWa1bCyFqGbLBUnMZoWdUjg0dqfzrLJ8nY5HdQHoytjLeupAbI4qENqM19Q-d3OGTJrx4ciZP_2oVi8CemiFqzVjbwpbS3As7xHYcfZuVDEJaFsgnMd9fp_K0z6n81xkdlZFzBggRc6j3BqM1rFSICsYWWbToGZGKJB7hDL_TDTl0VPCUopighNoicQ0Yn2HYXj3_6RJbRWJKY0qQl858rdhD-AWf1uKIDhLAjRhM9HDRqy-BimilhlpAJo0D7qZzehU17QiWlq7CDSU75Ag9nN2LqlUX5WbTKloMQGtEwl0BkYAco1qDDvYIqPmRjhIGr_InHj0GqbAcjO1TpOWrDZg9EbQKaOXLOW2IR15bKKHluxy_0ZzckmgYDRuo4HTQ94oWZqlpqb-_iQTDaceKvK6CmOCfKaVADs5BMzkcwcVNlkwingJhZsQAMmbHtGdrXt2l-dCVFgBWUx1P_yB7NstRaLxtQ04Hpaw6DAHrLbHVmvaXfWl7nX5eJ8RwRNfEfwXPOEThT2xXMZzb3bCtu4G42M280QtBlb6wLsLCikqhTNtIJ6NmO37HCKoYI1HvtzOLHkQJy4t8nZkFDtiQuhE5Mdlb6ZUepHXNXi1huFn9XrYX7hiGCOZuhu_GD3B2adQ2m5BCqAuPcbs5c8TUfueQsv9WBlkuLA21itpSqa_ajOMTSrPxHURRn3RRQUUNUFPTEOd4UdQgEMXzDgso8IZ7EogmkMKXopBtaEq7fQLdabGuTfR2Mlrpr4zLabDCbFYftaGYdz62N_IBaqevRy-eBoK7NIOcRp_2l-Z_pdcQrh2OzbudOjkMGHOdvSwUuqwtZ1vKWgMVoEc98MruA2WnC3-DfNQq-ixtmegGfAs9TnPtHamwyPQRv-gqS7Pa-Wqf4hv1nU-h5EKOnwjw5wpJEkwkO4E9XH-2Y5rbrJcNf7zBPjL9VqNapYGAp2gbIqDdsMlbYkS7E9rkvpWvqfA7mo_6M-v7IQ9nZqYQfrC9UTcgTRbMg4ZktS1SdMgY05urEgdfVDvhSudYYXFV8ckKaI-RfzsRnNNcOxWgjidb90HhMyVdk6bYHHOhnVTYBoxAs34c1u-sfGyTBuo-yFjl6jisli42Mva5G_SSACDf2AsCWtXDoX11lX-fKn59M6_VhvyVaNvJWO3dPFFIkH5QE_OmhOs5SM7h-hB0TpoXUn0rrnbMkJUqMmXZ-DjEwwMh_L5vxkK0GtLuqetm19LcCdv5cxTsubhnyRKY3s2-Rd0tHCcwOd0GgCSGL9h7ELmwWCForvsTC4nXuwtaKzzlBjvM2p9Q81osPBHZlGMtpWwbrNyWDGsp20qHGi9Ct7T9_jtT1Yh87eEkVz4cADaxTiEKaUPIGbbasuSTnS6-Ai4aV9uz109i_bhHebefbrLeFHLSYH1v2nCxfNE7kaj2ublh2OjGywyyfGJFJkOgtesTGk889N-YvpgLRHx84s7sNRc5OWpzqdzOpnYnRzZa0WHhzOn9sYcT1SGMmPccPwLZpm) failed to reach agreement
 Test (2B): agreement after follower reconnects ...
+2022/07/04 18:36:10 me: 0, tmp: 1
+2022/07/04 18:36:11 me: 2, tmp: 1
+2022/07/04 18:36:11 me: 1, tmp: 1
 ==================
 WARNING: DATA RACE
-Read at 0x00c000216c38 by goroutine 126:
-  6.824/raft.(*Raft).AppendEntries()
-      /home/blog/6.824/src/raft/raft.go:547 +0xc5
-  runtime.call32()
-      /usr/local/go/src/runtime/asm_amd64.s:702 +0x48
-  reflect.Value.Call()
-      /usr/local/go/src/reflect/value.go:339 +0xd7
-  6.824/labrpc.(*Service).dispatch()
-      /home/blog/6.824/src/labrpc/labrpc.go:496 +0x47b
-  6.824/labrpc.(*Server).dispatch()
-      /home/blog/6.824/src/labrpc/labrpc.go:420 +0x265
-  6.824/labrpc.(*Network).processReq.func1()
-      /home/blog/6.824/src/labrpc/labrpc.go:240 +0x9c
-
-Previous write at 0x00c000216c38 by goroutine 19:
+Write at 0x00c000089898 by goroutine 112:
   6.824/raft.(*Raft).turn2Candidate()
-      /home/blog/6.824/src/raft/raft.go:207 +0xa4
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:216 +0xb4
   6.824/raft.(*Raft).ticker()
-      /home/blog/6.824/src/raft/raft.go:793 +0x284
-  6.824/raft.Make.func1()
-      /home/blog/6.824/src/raft/raft.go:845 +0x39
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:825 +0x140
 
-Goroutine 126 (running) created at:
-  6.824/labrpc.(*Network).processReq()
-      /home/blog/6.824/src/labrpc/labrpc.go:239 +0x291
-  6.824/labrpc.MakeNetwork.func1.1()
-      /home/blog/6.824/src/labrpc/labrpc.go:157 +0x9c
+Previous read at 0x00c000089898 by goroutine 116:
+  6.824/raft.(*Raft).persist()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:319 +0x8e
+  6.824/raft.(*Raft).AppendEntries()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:637 +0x63e
+  runtime.call32()
+      /usr/lib/go-1.13/src/runtime/asm_amd64.s:539 +0x3a
+  reflect.Value.Call()
+      /usr/lib/go-1.13/src/reflect/value.go:321 +0xd3
+  6.824/labrpc.(*Service).dispatch()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:496 +0x811
+  6.824/labrpc.(*Server).dispatch()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:420 +0x607
+  6.824/labrpc.(*Network).processReq.func1()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:240 +0x93
 
-Goroutine 19 (running) created at:
+Goroutine 112 (running) created at:
   6.824/raft.Make()
-      /home/blog/6.824/src/raft/raft.go:845 +0x576
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:873 +0x5b1
   6.824/raft.(*config).start1()
-      /home/blog/6.824/src/raft/config.go:322 +0xa4f
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/config.go:322 +0x9d0
   6.824/raft.make_config()
-      /home/blog/6.824/src/raft/config.go:97 +0x990
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/config.go:97 +0x967
   6.824/raft.TestFailAgree2B()
-      /home/blog/6.824/src/raft/test_test.go:279 +0x50
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/test_test.go:279 +0x52
   testing.tRunner()
-      /usr/local/go/src/testing/testing.go:1439 +0x213
-  testing.(*T).Run.func1()
-      /usr/local/go/src/testing/testing.go:1486 +0x47
+      /usr/lib/go-1.13/src/testing/testing.go:909 +0x199
+
+Goroutine 116 (finished) created at:
+  6.824/labrpc.(*Network).processReq()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:239 +0x174
 ==================
-2022/06/29 07:26:27 2: log map[1:101]; server map[1:101 2:102 3:103 4:104 5:105]
-2022/06/29 07:26:27 2: log map[1:101]; server map[1:101 2:102 3:103 4:104 5:105]
-2022/06/29 07:26:27 apply error: commit index=2 server=2 106 != server=1 102
-exit status 1
-FAIL	6.824/raft	8.003s
+==================
+WARNING: DATA RACE
+Write at 0x00c0000898a0 by goroutine 112:
+  6.824/raft.(*Raft).turn2Candidate()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:219 +0x11b
+  6.824/raft.(*Raft).ticker()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:825 +0x140
+
+Previous read at 0x00c0000898a0 by goroutine 116:
+  6.824/raft.(*Raft).persist()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:320 +0xd6
+  6.824/raft.(*Raft).AppendEntries()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:637 +0x63e
+  runtime.call32()
+      /usr/lib/go-1.13/src/runtime/asm_amd64.s:539 +0x3a
+  reflect.Value.Call()
+      /usr/lib/go-1.13/src/reflect/value.go:321 +0xd3
+  6.824/labrpc.(*Service).dispatch()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:496 +0x811
+  6.824/labrpc.(*Server).dispatch()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:420 +0x607
+  6.824/labrpc.(*Network).processReq.func1()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:240 +0x93
+
+Goroutine 112 (running) created at:
+  6.824/raft.Make()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:873 +0x5b1
+  6.824/raft.(*config).start1()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/config.go:322 +0x9d0
+  6.824/raft.make_config()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/config.go:97 +0x967
+  6.824/raft.TestFailAgree2B()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/test_test.go:279 +0x52
+  testing.tRunner()
+      /usr/lib/go-1.13/src/testing/testing.go:909 +0x199
+
+Goroutine 116 (finished) created at:
+  6.824/labrpc.(*Network).processReq()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:239 +0x174
+==================
+--- FAIL: TestFailAgree2B (4.47s)
+    config.go:602: one(102) failed to reach agreement
+    testing.go:853: race detected during execution of test
+Test (2B): no agreement if too many followers disconnect ...
+==================
+WARNING: DATA RACE
+Write at 0x00c000200888 by goroutine 159:
+  time.(*Timer).Reset()
+      /usr/lib/go-1.13/src/time/sleep.go:125 +0x98
+  6.824/raft.(*Raft).AppendEntries()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:613 +0xa5e
+  runtime.call32()
+      /usr/lib/go-1.13/src/runtime/asm_amd64.s:539 +0x3a
+  reflect.Value.Call()
+      /usr/lib/go-1.13/src/reflect/value.go:321 +0xd3
+  6.824/labrpc.(*Service).dispatch()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:496 +0x811
+  6.824/labrpc.(*Server).dispatch()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:420 +0x607
+  6.824/labrpc.(*Network).processReq.func1()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:240 +0x93
+
+Previous write at 0x00c000200888 by goroutine 155:
+  time.(*Timer).Reset()
+      /usr/lib/go-1.13/src/time/sleep.go:125 +0x98
+  6.824/raft.(*Raft).turn2Follower()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:208 +0x17c
+  6.824/raft.(*Raft).RequestVote()
+      /home/ubuntu/MIT6.824-by-LLJ/src/raft/raft.go:483 +0x216
+  runtime.call32()
+      /usr/lib/go-1.13/src/runtime/asm_amd64.s:539 +0x3a
+  reflect.Value.Call()
+      /usr/lib/go-1.13/src/reflect/value.go:321 +0xd3
+  6.824/labrpc.(*Service).dispatch()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:496 +0x811
+  6.824/labrpc.(*Server).dispatch()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:420 +0x607
+  6.824/labrpc.(*Network).processReq.func1()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:240 +0x93
+
+Goroutine 159 (running) created at:
+  6.824/labrpc.(*Network).processReq()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:239 +0x174
+
+Goroutine 155 (running) created at:
+  6.824/labrpc.(*Network).processReq()
+      /home/ubuntu/MIT6.824-by-LLJ/src/labrpc/labrpc.go:239 +0x174
+==================
+2022/07/04 18:36:14 me: 0, tmp: 1
+2022/07/04 18:36:15 me: 1, tmp: 1
+2022/07/04 18:36:15 me: 2, tmp: 1
+2022/07/04 18:36:15 me: 3, tmp: 1
+2022/07/04 18:36:15 me: 4, tmp: 1
+signal: interrupt
+FAIL	6.824/raft	15.167s
