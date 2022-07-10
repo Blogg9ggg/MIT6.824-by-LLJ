@@ -120,15 +120,18 @@ func (rf *Raft) clearTimerC() {
 	}
 }
 func (rf *Raft) updateAppliedObj() {
-	var tmp int
+	var tmpInd int
 	for {
-		tmp = <- rf.updateAppliedChan
-		// DPrintf("me: %d\ntemp: %d\n", rf.me, temp)
-		rf.applyChan <- ApplyMsg{
+		tmpInd = <- rf.updateAppliedChan
+		rf.mu.Lock()
+		tmpApplyMsg := ApplyMsg{
 			CommandValid: 	true,
-			Command:		rf.log[tmp].Data,
-			CommandIndex:	tmp,
+			Command:		rf.log[tmpInd].Data,
+			CommandIndex:	tmpInd,
 		}
+		rf.mu.Unlock()
+
+		rf.applyChan <- tmpApplyMsg
 	}
 }
 func (rf *Raft) updateCommitIndex() {
@@ -150,14 +153,13 @@ func (rf *Raft) updateCommitIndex() {
 		}
 		if rf.commitIndex <= rf.lastApplied {
 			rf.mu.Unlock()
-			time.Sleep(1 * time.Second)
+			time.Sleep(time.Duration(100) * time.Millisecond)
 			continue
 		}
 		rf.lastApplied++
 		tmp = rf.lastApplied
 		rf.mu.Unlock()
 		rf.updateAppliedChan <- tmp
-		DPrintf("me: %d, tmp: %d\n", rf.me, tmp)
 	}
 }
 
@@ -165,9 +167,9 @@ func (rf *Raft) updateCommitIndex() {
 const debug bool = false
 func (rf *Raft) allInfo(pos string, to int, res bool, reply_term int, args_prev_log_index int, entries_len int) {
 	if debug {
-		fmt.Printf("=============== @%s ===============\n", pos)
+		DPrintf("=============== @%s ===============\n", pos)
 		fmt.Printf("ID: %d\nTerm: %d\nState: %d\nCommitInd: %d\n", rf.me, rf.currentTerm, rf.state, rf.commitIndex)
-		fmt.Printf("To: %d\nResult: %v\nreply.Term: %d\nargs.PrevLogIndex: %d\n", to, res, reply_term, args_prev_log_index)
+		fmt.Printf("To/from: %d\nResult: %v\nreply.Term: %d\nargs.PrevLogIndex: %d\n", to, res, reply_term, args_prev_log_index)
 		fmt.Printf("lastApplied: %d\nentries_len: %d\n",rf.lastApplied, entries_len)
 		fmt.Printf("Log: ")
 		for i := 0; i < len(rf.log); i++ {
@@ -197,7 +199,7 @@ func (rf *Raft) turn2Follower(vot int, cur int) {
 			rf.votedFor = vot
 		}
 	} else if cur > rf.currentTerm {
-		rf.state = follower		// here
+		rf.state = follower
 		rf.votedFor = vot
 		rf.currentTerm = cur
 	}
@@ -261,10 +263,10 @@ func (rf *Raft) turn2Leader() {
 	rf.clearTimerC()
 	rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
 
-	var wg sync.WaitGroup
+	// var wg sync.WaitGroup
 	for i := 0; i < len(rf.peers); i++ {
 		if i != rf.me {
-			wg.Add(1)
+			// wg.Add(1)
 			go func(ind int) {
 				args := AppendEntriesArgs{
 					Term: 			rf.currentTerm,
@@ -277,11 +279,11 @@ func (rf *Raft) turn2Leader() {
 				reply := AppendEntriesReply{}
 	
 				rf.sendAppendEntries(ind, &args, &reply)
-				wg.Done()
+				// wg.Done()
 			}(i)
 		}
 	}
-	wg.Wait()
+	// wg.Wait()
 }
 
 // return currentTerm and whether this server
@@ -313,6 +315,13 @@ func (rf *Raft) persist() {
 	// e.Encode(rf.yyy)
 	// data := w.Bytes()
 	// rf.persister.SaveRaftState(data)
+
+	// rf.mu.Lock()
+	// tCurrentTerm := rf.currentTerm
+	// tVotedFor := rf.votedFor
+	// tLog := make([]LogEntry, len(rf.log))
+	// copy(tLog, rf.log)
+	// rf.mu.Unlock()
 
 	buf := new(bytes.Buffer)
 	enc := labgob.NewEncoder(buf)
@@ -425,7 +434,15 @@ func (rf *Raft) isUpToDate(lastLogIndex int, lastLogTerm int) (bool) {
 
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (2A, 2B).
-	
+
+	if rf.killed() {
+		reply.Term = -1
+		reply.VoteGranted = false
+		return
+	}
+	// func (rf *Raft) allInfo(pos string, to int, res bool, reply_term int, args_prev_log_index int, entries_len int)
+	rf.allInfo("RequestVote", args.CandidateId, false, -1, -1, -1)
+
 	// Reply false if term < currentTerm (&5.1)
 	// R
 	rf.mu.Lock()
@@ -442,9 +459,11 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	is_up_to_date := rf.isUpToDate(args.LastLogIndex, args.LastLogTerm)
 
 	// args.Term >= rf.currentTerm
+	rf.mu.Lock()
 	switch rf.state {
 	case leader:
 		if args.Term > rf.currentTerm {
+			rf.mu.Unlock()
 			reply.Term = args.Term
 			if is_up_to_date {
 				reply.VoteGranted = true
@@ -455,10 +474,10 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 			}
 		} else {
 			reply.Term = rf.currentTerm
+			rf.mu.Unlock()
 			reply.VoteGranted = false
 		}
 	case candidate:
-		rf.mu.Lock()
 		if args.Term > rf.currentTerm {
 			rf.mu.Unlock()
 			reply.Term = args.Term
@@ -476,6 +495,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		}
 	case follower:
 		if args.Term > rf.currentTerm {
+			rf.mu.Unlock()
 			reply.Term = args.Term
 			if is_up_to_date {
 				reply.VoteGranted = true
@@ -490,9 +510,11 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 			reply.Term = args.Term
 			if rf.votedFor < 0 {
 				rf.votedFor = args.CandidateId
+				rf.mu.Unlock()
 				rf.persist()
 				reply.VoteGranted = true
 			} else {
+				rf.mu.Unlock()
 				reply.VoteGranted = false
 			}
 
@@ -500,6 +522,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 			rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 		} else {
 			reply.Term = rf.currentTerm
+			rf.mu.Unlock()
 			// SOMETHING ERROR
 		}
 	}
@@ -535,11 +558,18 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 // the struct itself.
 //
 func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) {
+	if rf.killed() {
+		reply.Term = -1
+		reply.VoteGranted = false
+		return
+	}
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	
 	if !ok {
 		return
 	}
+	// func (rf *Raft) allInfo(pos string, to int, res bool, reply_term int, args_prev_log_index int, entries_len int)
+	rf.allInfo("sendRequestVote", server, reply.VoteGranted, reply.Term, -1, -1)
 
 	rf.mu.Lock()
 	if reply.Term > rf.currentTerm {// reply.Success must be false
@@ -583,10 +613,13 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		return
 	}
 
+	rf.mu.Lock()
 	if args.Term < rf.currentTerm {
 		reply.Term = rf.currentTerm
+		rf.mu.Unlock()
 		return
 	}
+	rf.mu.Unlock()
 
 	// args.Term >= rf.currentTerm
 	switch rf.state {
@@ -625,6 +658,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 
 		return
 	}
+	rf.mu.Lock()
 	if args.PrevLogIndex < len(rf.log) && 
 		rf.log[args.PrevLogIndex].Term == args.PrevLogTerm {
 		for i := 0; i < len(args.Entries); i++ {
@@ -641,14 +675,18 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	if args.LeaderCommit > rf.commitIndex {
 		rf.commitIndex = min(args.LeaderCommit, len(rf.log) - 1)
 	}
+	rf.mu.Unlock()
 }
 
 func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) {
 	if rf.killed() {
+		reply.Term = -1
+		reply.Success = false
 		return
 	}
 
 	ok := rf.peers[server].Call("Raft.AppendEntries", args, reply)
+	DPrintf("me: %d, to: %d, ok: %v\n", rf.me, server, ok)
 
 	if !ok {
 		// communication error, just retry
@@ -656,8 +694,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 		go rf.sendAppendEntries(server, args, reply)
 		return
 	}
-	
-	rf.allInfo("sendAppendEntries", server, reply.Success, reply.Term, args.PrevLogIndex, len(args.Entries))
 	rf.mu.Lock()
 	if reply.Term > rf.currentTerm {// reply.Success must be false
 		rf.mu.Unlock()
@@ -687,6 +723,9 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 			return
 		}
 		rf.nextIndex[server] = min(rf.nextIndex[server], args.PrevLogIndex)
+		if rf.nextIndex[server] <= rf.matchIndex[server] {
+			rf.nextIndex[server] = rf.matchIndex[server] + 1
+		}
 		args = &AppendEntriesArgs{
 			Term: 			rf.currentTerm,
 			LeaderId:		rf.me,
@@ -785,10 +824,12 @@ func (rf *Raft) ticker() {
 		// time.Sleep().
 		<- rf.timer.C
 
+		rf.mu.Lock()
 		switch rf.state {
 		case leader:
+			rf.mu.Unlock()
 			rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
-			var wg sync.WaitGroup
+			// var wg sync.WaitGroup
 			for i := 0; i < len(rf.peers); i++ {
 				if i != rf.me {
 					rf.mu.Lock()
@@ -811,17 +852,19 @@ func (rf *Raft) ticker() {
 					}
 					rf.mu.Unlock()
 
-					wg.Add(1)
+					// wg.Add(1)
 					go func(ind int, args *AppendEntriesArgs, reply *AppendEntriesReply) {
 						rf.sendAppendEntries(ind, args, reply)
-						wg.Done()
+						// wg.Done()
 					}(i, &args, &reply)
 				}
 			}
-			wg.Wait()
+			// wg.Wait()
 		case candidate:
+			rf.mu.Unlock()
 			rf.turn2Candidate()
 		case follower:
+			rf.mu.Unlock()
 			rf.turn2Candidate()
 		}
 	}
