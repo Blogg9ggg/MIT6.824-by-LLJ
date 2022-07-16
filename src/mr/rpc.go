@@ -13,7 +13,6 @@ import "strconv"
 
 type AskTaskArgs struct {
 	Result int 	// 0, init; 1, map_ok; 2, reduce_ok
-	// FileName string
 	Id int		// Result = 1, map task ID
 				// Result = 2, reduce task ID
 	Position string	// Result = 1, the floder of map's result ("[Position]/mr-[Id]-*")
@@ -21,11 +20,11 @@ type AskTaskArgs struct {
 }
 
 type AskTaskReply struct {
-	Flag int	// 0, undefined; 1, map; 2, reduce; 3, wait; 4, finish
-	 []string // Flag = 1, Position[0] := a origin input file's positon
-					  // Flag = 2, Position	:= all mapped result ("???/mr-[0-(NMap-1)]-[0-(NReduce-1)]")
-	Id int			// Flag = 1, map task ID. Expected generation: "???/mr-[Id]-*"
-					// Flag = 2, reduce task Id. Expected generation: "???/mr-out-[Id]"
+	Flag int			// 0, undefined; 1, map; 2, reduce; 3, wait; 4, finish
+	Position []string 	// Flag = 1, Position[0] := a origin input file's positon
+						// Flag = 2, Position	:= all mapped result ("???/mr-[0-(NMap-1)]-[0-(NReduce-1)]")
+	Id int				// Flag = 1, map task ID. Expected generation: "???/mr-[Id]-*"
+						// Flag = 2, reduce task Id. Expected generation: "???/mr-out-[Id]"
 	NReduce int
 	NMap int
 }

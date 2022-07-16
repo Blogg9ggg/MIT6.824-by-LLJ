@@ -10,7 +10,7 @@ import "io/ioutil"
 import "encoding/json"
 import "sort"
 import "strconv"
-// import "strings"
+
 import "time"
 
 
@@ -49,12 +49,10 @@ var position string
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
 
-	// Your worker implementation here.
-
 	// create a workstation folder
+	// 创建一个临时文件夹保存这个 worker 的输出
 	var err error
 	err = os.Mkdir("./data", os.ModePerm)
-
 	position, err = os.MkdirTemp("./data", "*")
 	if err != nil {
         log.Fatal(err)
@@ -63,31 +61,38 @@ func Worker(mapf func(string, string) []KeyValue,
 	CallAskTask(mapf, reducef)
 }
 
+// 
+// 处理 map 任务
+// 
 func makeMap(reply *AskTaskReply, 
 	mapf func(string, string) []KeyValue) error {
-
+	// 打开输入的原始文件并将内容读取到 content
 	file, err := os.Open(reply.Position[0])
 	if err != nil {
 		return err
 	}
-	// origin file's content
 	content, err := ioutil.ReadAll(file)
 	if err != nil {
 		return err
 	}
 	file.Close()
 
+	// 对 content 执行 map 函数得到一个保存 kv 对的列表
 	intermediate := []KeyValue{}
 	kva := mapf(reply.Position[0], string(content))
 	intermediate = append(intermediate, kva...)
+	// 根据 key 值排序
 	sort.Sort(ByKey(intermediate))
 	
+	// 利用 ihash 函数将 map 得到的结果分成 NReduce 组 (分给各个 reduce 任务)
 	im_groups := make([]ByKey, reply.NReduce)
 	for _, kv := range intermediate {
 		ihk := ihash(kv.Key) % reply.NReduce
 		im_groups[ihk] = append(im_groups[ihk], kv)
 	}
 
+	// 将 map 任务得到的结果保存到对应的文件中, 分配到各个 reduce 任务
+	// 命名方式: mr-【map 任务 id】-【reduce 任务 id】
 	for i := 0; i < reply.NReduce; i++ {
 		filename := "mr-" + strconv.Itoa(reply.Id) + "-" + strconv.Itoa(i)
 		file, err = ioutil.TempFile(position, filename)
@@ -112,10 +117,15 @@ func makeMap(reply *AskTaskReply,
 	return nil
 }
 
+// 
+// 处理 reduce 任务
+// 
 func makeReduce(reply *AskTaskReply, 
 	reducef func(string, []string) string) (pos string, err error) {
-
 	intermediate := []KeyValue{}
+	// reply.Position 中记录了保存各个 map 任务结果的文件夹
+	// 去各个 map 任务对应的文件夹中取出其结果分割给本 reduce 任务的部分
+	// 将所有数据进行 json 解码然后整合在一起重新排序
 	for i := 0; i < reply.NMap; i++ {
 		filename := reply.Position[i] + "/mr-" + strconv.Itoa(i) + "-" + strconv.Itoa(reply.Id)
 		file, err := os.Open(filename)
@@ -133,9 +143,10 @@ func makeReduce(reply *AskTaskReply,
 		}
 		file.Close()
 	}
-	
 	sort.Sort(ByKey(intermediate))
 
+	// 保存输出文件
+	// 格式: mr-out-【reduce 任务 id】
 	filename := "mr-out-" + strconv.Itoa(reply.Id)
 	file, err := ioutil.TempFile(position, filename)
 	if err != nil {
@@ -159,6 +170,7 @@ func makeReduce(reply *AskTaskReply,
 		i = j
 	}
 
+	// 将所有数据保存完之后再去 rename
 	filename = position + "/" + filename
 	err = os.Rename(file.Name(), filename)
 	if err != nil {
@@ -168,43 +180,63 @@ func makeReduce(reply *AskTaskReply,
 	return filename, nil
 }
 
+// 
+// worker 端主逻辑
+// 
 func CallAskTask(mapf func(string, string) []KeyValue, 
 	reducef func(string, []string) string) {
+	const (
+		// args.Result
+		init_status		int = 0
+		map_ok			int = 1
+		reduce_ok		int = 2
+		// reply.Flag
+		map_task 		int = 1
+		reduce_task 	int = 2
+		wait 			int = 3
+		finish 			int = 4
+	)
 
 	args := AskTaskArgs{}
 	args.Result = 0
 	reply := AskTaskReply{}
 	ok := call("Coordinator.DistributeTasks", &args, &reply)
 	
+	// 循环请求分配任务，每次请求顺便把上次任务的结果发给 coordinator
+	// 循环直到全部的 map/reduce 任务结束
 	for {
 		args = AskTaskArgs{}
 		if ok {
 			switch reply.Flag {
-			case 1:
+			case map_task:
 				err := makeMap(&reply, mapf)
 				if err != nil {	// map error
-					args.Result = 0
+					args.Result = init_status
 				} else {
-					args.Result = 1
+					args.Result = map_ok
 					args.Id = reply.Id
 					args.Position = position
 				}
-			case 2:
+			case reduce_task:
 				pos, err := makeReduce(&reply, reducef)
 				if err != nil {	// reduce error
-					args.Result = 0
+					args.Result = init_status
 				} else {
-					args.Result = 2
+					args.Result = reduce_ok
 					args.Id = reply.Id
 					args.Position = pos
 				}
-			case 3:
+			case wait:
 				time.Sleep(3*time.Second)
-				args.Result = 0
-			case 4:
+				args.Result = init_status
+			case finish:
 				log.Fatalf("WORKER(@%v) END.", position)
 			}
 		} else {
+			// ok == false，即与 coordinator 失去连接。
+			// 由于本框架不考虑 coordinator 的容灾能力，
+			// 故认为这是 coordinator 由于所有任务已完成而主动关机，
+			// 故 worker 也结束服务。
 			log.Fatalf("WORKER(@%v) END.", position)
 		}
 

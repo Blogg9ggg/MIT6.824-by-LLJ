@@ -28,20 +28,31 @@ type Coordinator struct {
 }
 
 // Your code here -- RPC handlers for the worker to call.
+const (
+	// args.Result
+	init_status		int = 0
+	map_ok			int = 1
+	reduce_ok		int = 2
+	// reply.Flag
+	map_task 		int = 1
+	reduce_task 	int = 2
+	wait 			int = 3
+	finish 			int = 4
+)
 func (c *Coordinator) DistributeTasks(args *AskTaskArgs, reply *AskTaskReply) error {
 	if c.MapFinish && c.ReduceFinish {
-		reply.Flag = 4
+		reply.Flag = finish
 		return nil
 	}
 
 	switch args.Result {
-	case 1:
+	case map_ok:
 		lock.Lock()
 		if c.MappedFilePos[args.Id] == "" {
 			c.MappedFilePos[args.Id] = args.Position
 		}
 		lock.Unlock()
-	case 2:
+	case reduce_ok:
 		lock.Lock()
 		if c.ReducedFilePos[args.Id] == "" {
 			c.ReducedFilePos[args.Id] = "./mr-out-" + strconv.Itoa(args.Id)		
@@ -60,7 +71,7 @@ func (c *Coordinator) DistributeTasks(args *AskTaskArgs, reply *AskTaskReply) er
 			if c.MappedFilePos[i] == "" {
 				lock.Lock()
 				if nowtime - c.MapLastTime[i] > 10 {	
-					reply.Flag = 1
+					reply.Flag = map_task
 					reply.Position = append(reply.Position, c.OriginFile[i])
 					reply.Id = i
 					reply.NReduce = c.R
@@ -84,23 +95,21 @@ func (c *Coordinator) DistributeTasks(args *AskTaskArgs, reply *AskTaskReply) er
 	}
 
 	// assert: c.MapFinish == true
-
 	tfinish := true
 	for i := 0; i < c.R ; i++ {
 		lock.Lock()
-		if c.ReducedFilePos[i] == "" {		// <<<
-			if nowtime - c.ReduceLastTime[i] > 10 {	// <<<
-				reply.Flag = 2
+		if c.ReducedFilePos[i] == "" {
+			if nowtime - c.ReduceLastTime[i] > 10 {
+				reply.Flag = reduce_task
 				
 				for j := 0; j < c.M; j++ {
-					reply.Position = append(reply.Position, c.MappedFilePos[j])	// <<<
+					reply.Position = append(reply.Position, c.MappedFilePos[j])
 				}
 				reply.Id = i
 				reply.NReduce = c.R
 				reply.NMap = c.M
 
 				c.ReduceLastTime[i] = nowtime
-				
 				lock.Unlock()
 
 				return nil
@@ -110,12 +119,12 @@ func (c *Coordinator) DistributeTasks(args *AskTaskArgs, reply *AskTaskReply) er
 		lock.Unlock()
 	}
 
-	reply.Flag = 3	// wait
+	reply.Flag = wait	// wait
 	lock.Lock()
 	if tfinish && !c.ReduceFinish {
 		c.ReduceFinish = true		
 		if c.MapFinish {
-			reply.Flag = 4	
+			reply.Flag = finish	
 		}
 	}
 	lock.Unlock()

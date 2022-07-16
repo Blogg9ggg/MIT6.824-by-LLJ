@@ -168,11 +168,23 @@ func makeReduce(reply *AskTaskReply,
 	return filename, nil
 }
 
+
 func CallAskTask(mapf func(string, string) []KeyValue, 
 	reducef func(string, []string) string) {
+	const (
+		// args.Result
+		init_status		int = 0
+		map_ok			int = 1
+		reduce_ok		int = 2
+		// reply.Flag
+		map_task 		int = 1
+		reduce_task 	int = 2
+		wait 			int = 3
+		finish 			int = 4
+	)
 
 	args := AskTaskArgs{}
-	args.Result = 0
+	args.Result = init_status
 	reply := AskTaskReply{}
 	ok := call("Coordinator.DistributeTasks", &args, &reply)
 	
@@ -180,28 +192,28 @@ func CallAskTask(mapf func(string, string) []KeyValue,
 		args = AskTaskArgs{}
 		if ok {
 			switch reply.Flag {
-			case 1:
+			case map_task:
 				err := makeMap(&reply, mapf)
 				if err != nil {	// map error
-					args.Result = 0
+					args.Result = init_status
 				} else {
-					args.Result = 1
+					args.Result = map_ok
 					args.Id = reply.Id
 					args.Position = position
 				}
-			case 2:
+			case reduce_task:
 				pos, err := makeReduce(&reply, reducef)
 				if err != nil {	// reduce error
-					args.Result = 0
+					args.Result = init_status
 				} else {
-					args.Result = 2
+					args.Result = reduce_ok
 					args.Id = reply.Id
 					args.Position = pos
 				}
-			case 3:
+			case wait:
 				time.Sleep(3*time.Second)
-				args.Result = 0
-			case 4:
+				args.Result = init_status
+			case finish:
 				log.Fatalf("WORKER(@%v) END.", position)
 			}
 		} else {
