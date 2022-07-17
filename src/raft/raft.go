@@ -71,8 +71,10 @@ type Raft struct {
 	yes_vote	int
 
 	// for snap shot
-	snapShotIndex int
-	snapShotTerm int
+	snapShotIndex 	int
+	snapShotTerm 	int
+
+	applyCond	*sync.Cond
 }
 
 // util
@@ -110,11 +112,29 @@ func (rf *Raft) normalApply() {
 			CommandIndex:	rf.lastApplied,
 		}
 		rf.mu.Unlock()
-		DPrintf("SERVER #%d: apply [%d](%v)\n", rf.me, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
 
+		DPrintf("1SERVER #%d: apply [%d](%v)\n", rf.me, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
 		rf.applyChan <- tmpApplyMsg
 	}
 }
+func (rf *Raft) applier() {
+	for rf.killed() == false {
+		rf.mu.Lock()
+		for rf.lastApplied >= rf.commitIndex {
+			rf.applyCond.Wait()
+		}
+		rf.lastApplied++
+		tmpApplyMsg := ApplyMsg{
+			CommandValid: 	true,
+			Command:		rf.log[rf.indInLog(rf.lastApplied)].Data,
+			CommandIndex:	rf.lastApplied,
+		}
+		rf.mu.Unlock()
+		DPrintf("2SERVER #%d: apply [%d](%v)\n", rf.me, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
+		rf.applyChan <- tmpApplyMsg
+	}
+}
+
 // for updating commitIndex
 func (rf *Raft) updateCommitIndex(newComInd int) {
 	if newComInd != -1 {
@@ -364,12 +384,12 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 	
 	// outdated snapshot
 	if args.LastIncludedIndex <= rf.lastApplied {
-		rf.persist()
 		rf.mu.Unlock()
 		return
 	}
 	rf.mu.Unlock()
 
+	DPrintf("3SERVER #%d: apply [%d](%v)\n", rf.me, args.LastIncludedIndex, -1)
 	rf.applyChan <- ApplyMsg{
 		SnapshotValid: 	true,
 		Snapshot: 		args.Data,
@@ -435,16 +455,17 @@ func (rf *Raft) CondInstallSnapshot(lastIncludedTerm int, lastIncludedIndex int,
 	return true
 }
 
-func (rf *Raft) shrinkLogsArray() {
-	const lenMultiple = 2
-	if len(rf.log) == 0 {
-		rf.log = nil
-	} else if len(rf.log)*lenMultiple < cap(rf.log) {
-		newLogs := make([]LogEntry, len(rf.log))
-		copy(newLogs, rf.log)
-		rf.log = newLogs
-	}
-}
+// func (rf *Raft) shrinkLogsArray() {
+// 	const lenMultiple = 2
+// 	if len(rf.log) == 0 {
+// 		rf.log = nil
+// 	} else if len(rf.log)*lenMultiple < cap(rf.log) {
+// 		newLogs := make([]LogEntry, len(rf.log))
+// 		copy(newLogs, rf.log)
+// 		rf.log = newLogs
+// 	}
+// 	rf.persist()
+// }
 
 // the service says it has created a snapshot that has
 // all info up to and including index. this means the
@@ -488,8 +509,6 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 	rf.log[0].Term = rf.snapShotTerm
 
 	rf.persister.SaveStateAndSnapshot(rf.encodeState(), snapshot)
-	
-	
 	// rf.allInfo("Snapshot(after)", -1, true, -1)
 }
 
@@ -734,12 +753,12 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		
 		reply.Success = true
 	}
-	
 	rf.persist()
 	if args.LeaderCommit > rf.commitIndex {
 		rf.updateCommitIndex(min(args.LeaderCommit, rf.lenOfLog() - 1))
 		rf.mu.Unlock()
-		rf.normalApply()
+		// rf.normalApply()
+		rf.applyCond.Signal()
 
 		return
 	}
@@ -786,7 +805,8 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 		rf.updateCommitIndex(-1)
 		rf.mu.Unlock()
 		
-		rf.normalApply()
+		// rf.normalApply()
+		rf.applyCond.Signal()
 	} else {
 		rf.mu.Lock()
 		if args.PrevLogIndex <= rf.snapShotIndex {
@@ -1008,6 +1028,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 		snapShotIndex: 0,
 		snapShotTerm: 0,
 	}
+	rf.applyCond = sync.NewCond(&rf.mu)
 	
 	// initialize from state persisted before a crash
 	rf.readPersist(persister.ReadRaftState())
@@ -1017,6 +1038,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.allInfo("Make", -1, true, -1)
 	// start ticker goroutine to start elections
 
+	go rf.applier()
 	go rf.ticker()
 
 	return rf
