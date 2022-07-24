@@ -172,13 +172,6 @@ func max(a int, b int) int {
 	}
 	return b
 }
-// clear the chan of timer
-// 这个 clear 其实没什么用，因为 timer 的很多操作都是原子性的
-func (rf *Raft) clearTimerC() {
-	if !rf.timer.Stop() && len(rf.timer.C)>0 {
-		<- rf.timer.C
-	}
-}
 
 func (rf *Raft) applier() {
 	for rf.killed() == false {
@@ -229,7 +222,6 @@ func (rf *Raft) updateCommitIndex(newComInd int) {
 // change state (before the function)
 // if currentTerm change, votedFor must change
 func (rf *Raft) turn2Follower(vot int, cur int) {
-	rf.mu.Lock()
 	if cur == rf.currentTerm {
 		rf.state = follower
 		if rf.votedFor == -1 {
@@ -240,24 +232,19 @@ func (rf *Raft) turn2Follower(vot int, cur int) {
 		rf.votedFor = vot
 		rf.currentTerm = cur
 	}
-	rf.mu.Unlock()
 
-	rf.clearTimerC()
 	rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 }
 
 func (rf *Raft) turn2Candidate() {
-	rf.mu.Lock()
 	rf.state = candidate
 	// Increment currentTerm
 	rf.currentTerm ++
 	// Vote for self
 	rf.yes_vote = 1
 	rf.votedFor = rf.me
-	rf.mu.Unlock()
 
 	// Reset election timer
-	rf.clearTimerC()
 	rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 
 	for i := 0; i < len(rf.peers); i++ {
@@ -280,9 +267,7 @@ func (rf *Raft) turn2Candidate() {
 }
 
 func (rf *Raft) turn2Leader() {
-	rf.mu.Lock()
 	if rf.state != candidate {
-		rf.mu.Unlock()
 		return
 	}
 
@@ -292,9 +277,7 @@ func (rf *Raft) turn2Leader() {
 		rf.nextIndex[i] = nextIndex_
 		rf.matchIndex[i] = 0
 	}
-	rf.mu.Unlock()
 
-	rf.clearTimerC()
 	rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
 
 	for i := 0; i < len(rf.peers); i++ {
@@ -403,6 +386,7 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 	// 
 	// 改变 state
 	// 
+	rf.mu.Lock()
 	if args.Term > rf.currentTerm {
 		rf.turn2Follower(-1, args.Term)
 	} else {// args.Term == rf.currentTerm
@@ -413,12 +397,10 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		case candidate:
 			rf.turn2Follower(rf.me, args.Term)
 		case follower:
-			rf.clearTimerC()
 			rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 		}
 	}
 
-	rf.mu.Lock()
 	// 丢弃过时的快照
 	if args.LastIncludedIndex <= rf.commitIndex {
 		rf.mu.Unlock()
@@ -446,13 +428,12 @@ func (rf *Raft) sendInstallSnapshot(server int, args *InstallSnapshotArgs, reply
 	DPrintf("### SERVER %d: sendInstallSnapshot is ok.\n", rf.me)
 
 	rf.mu.Lock()
+	defer rf.mu.Unlock()
 	if reply.Term > rf.currentTerm {
-		rf.mu.Unlock()
 		rf.turn2Follower(-1, reply.Term)
 		return
 	}
 	rf.nextIndex[server] = max(rf.nextIndex[server], args.LastIncludedIndex + 1)
-	rf.mu.Unlock()
 }
 
 
@@ -461,8 +442,6 @@ func (rf *Raft) sendInstallSnapshot(server int, args *InstallSnapshotArgs, reply
 // have more recent info since it communicate the snapshot on applyCh.
 //
 func (rf *Raft) CondInstallSnapshot(lastIncludedTerm int, lastIncludedIndex int, snapshot []byte) bool {
-
-	// Your code here (2D).
 	DPrintf("### SERVER %d: CondInstallSnapshot ...\n", rf.me)
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
@@ -534,9 +513,6 @@ type RequestVoteReply struct {
 
 // check if sender's log is up-to-date ?
 func (rf *Raft) isUpToDate(lastLogIndex int, lastLogTerm int) (bool) {
-	rf.mu.Lock()
-	defer rf.mu.Unlock()
-
 	rfLastTerm := rf.logapi.tail().Term
 	if lastLogTerm > rfLastTerm {
 		return true
@@ -565,26 +541,23 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	
 	// Reply false if term < currentTerm (&5.1)
 	rf.mu.Lock()
+	defer rf.mu.Unlock()
 	if args.Term < rf.currentTerm {
 		reply.Term = rf.currentTerm
 		reply.VoteGranted = false
 		rf.persist()
-		rf.mu.Unlock()
 		
 		return
 	}
-	rf.mu.Unlock()
 	
 	// If votedFor is null or candidatedId, and candidate's log is at
 	// least as up-to-date as receiver's log, grant vote (&5.2, &5.4)
 	is_up_to_date := rf.isUpToDate(args.LastLogIndex, args.LastLogTerm)
 	
 	// args.Term >= rf.currentTerm
-	rf.mu.Lock()
 	switch rf.state {
 	case leader:
 		if args.Term > rf.currentTerm {
-			rf.mu.Unlock()
 			reply.Term = args.Term
 			if is_up_to_date {
 				reply.VoteGranted = true
@@ -596,11 +569,9 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		} else {
 			reply.Term = rf.currentTerm
 			reply.VoteGranted = false
-			rf.mu.Unlock()
 		}
 	case candidate:
 		if args.Term > rf.currentTerm {
-			rf.mu.Unlock()
 			reply.Term = args.Term
 			if is_up_to_date {
 				reply.VoteGranted = true
@@ -612,11 +583,9 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		} else {
 			reply.Term = rf.currentTerm
 			reply.VoteGranted = false
-			rf.mu.Unlock()
 		}
 	case follower:
 		if args.Term > rf.currentTerm {
-			rf.mu.Unlock()
 			reply.Term = args.Term
 			if is_up_to_date {
 				reply.VoteGranted = true
@@ -629,24 +598,18 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 			reply.Term = args.Term
 			if rf.votedFor < 0 && is_up_to_date {
 				rf.votedFor = args.CandidateId
-				rf.mu.Unlock()
 				reply.VoteGranted = true
 			} else {
-				rf.mu.Unlock()
 				reply.VoteGranted = false
 			}
 			
-			rf.clearTimerC()
 			rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 		} else {
 			reply.Term = rf.currentTerm
-			rf.mu.Unlock()
 			// SOMETHING ERROR
 		}
 	}
-	rf.mu.Lock()
 	rf.persist()
-	rf.mu.Unlock()
 }
 
 
@@ -677,22 +640,19 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 
 	
 	rf.mu.Lock()
+	defer rf.mu.Unlock()
+
 	if reply.Term > rf.currentTerm {// reply.Success must be false
-		rf.mu.Unlock()
 		rf.turn2Follower(-1, reply.Term)
 		return
 	}
-	rf.mu.Unlock()
 
 	if args.Term == rf.currentTerm && reply.VoteGranted {
-		rf.mu.Lock()
 		rf.yes_vote++
 		if rf.yes_vote > len(rf.peers)/2 {
-			rf.mu.Unlock()
 			rf.turn2Leader()
 			return
 		}
-		rf.mu.Unlock()
 	} 
 }
 
@@ -740,12 +700,13 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	// 改变 state
 	// 
 	rf.mu.Lock()
+	defer rf.mu.Unlock()
+
 	switch rf.state {
 	// 保证: args.Term >= rf.currentTerm
 	case leader:
 		// Election Safety 性质保证此处 args.Term > rf.currentTerm
 		if args.Term > rf.currentTerm {
-			rf.mu.Unlock()
 			rf.turn2Follower(-1, args.Term)
 		} // else SOMETHING ERROR
 	case candidate:
@@ -753,23 +714,19 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		if args.Term > rf.currentTerm {
 			tmpVotedFor = -1
 		}
-		rf.mu.Unlock()
 		rf.turn2Follower(tmpVotedFor, args.Term)
 	case follower:
 		if args.Term > rf.currentTerm {
 			rf.currentTerm = args.Term
 			rf.votedFor = -1
 		}
-		rf.mu.Unlock()
 
-		rf.clearTimerC()
 		rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 	}
 
 	// 
 	// 复制日志
 	// 
-	rf.mu.Lock()
 	// 利用 ConflictTerm, ConflictIndex 这 2 个字段做 accelerated log backtracking optimization
 	if rf.logapi.headIndex > args.PrevLogIndex ||
 		args.PrevLogIndex > rf.logapi.tailIndex() {
@@ -795,11 +752,8 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	rf.persist()
 	if args.LeaderCommit > rf.commitIndex {
 		rf.updateCommitIndex(min(args.LeaderCommit, rf.logapi.tailIndex()))
-		rf.mu.Unlock()
-
 		return
 	}
-	rf.mu.Unlock()
 }
 
 func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) {
@@ -816,6 +770,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	}
 	rf.persist()
 	rf.mu.Unlock()
+
 	ok := rf.peers[server].Call("Raft.AppendEntries", args, reply)
 	
 	if !ok {
@@ -839,15 +794,15 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	DPrintf("matchIndex: %v\n", rf.matchIndex)
 
 	rf.mu.Lock()
+	defer rf.mu.Unlock()
+
 	if reply.Term > rf.currentTerm {
 		// reply.Success 一定是 false
-		rf.mu.Unlock()
 		rf.turn2Follower(-1, reply.Term)
 		return
 	}
 	// 验证身份和任期
 	if rf.state != leader || args.Term != rf.currentTerm {
-		rf.mu.Unlock()
 		return
 	}
 
@@ -855,7 +810,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 		rf.matchIndex[server] = max(args.PrevLogIndex+len(args.Entries), rf.matchIndex[server])
 		rf.nextIndex[server] = max(rf.matchIndex[server]+1, rf.nextIndex[server])
 		rf.updateCommitIndex(-1)
-		rf.mu.Unlock()
 	} else {
 		tmpInd := rf.logapi.findLast(reply.ConflictTerm)
 		if tmpInd == -1 {
@@ -874,7 +828,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 			}
 			sreply := InstallSnapshotReply{}
 			rf.persist()
-			rf.mu.Unlock()
 			
 			go rf.sendInstallSnapshot(server, &sargs, &sreply)
 		} else {
@@ -893,7 +846,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 				}
 			}
 			rf.persist()
-			rf.mu.Unlock()
+			
 			go rf.sendAppendEntries(server, args, reply)
 		}
 	}
@@ -975,12 +928,10 @@ func (rf *Raft) ticker() {
 		rf.mu.Lock()
 		switch rf.state {
 		case leader:
-			rf.mu.Unlock()
 			rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
 			
 			for i := 0; i < len(rf.peers); i++ {
 				if i != rf.me {
-					rf.mu.Lock()
 					if rf.nextIndex[i] - 1 < rf.snapShotIndex {
 						args := InstallSnapshotArgs {
 							Term: 				rf.currentTerm,
@@ -991,7 +942,6 @@ func (rf *Raft) ticker() {
 						}
 						reply := InstallSnapshotReply{}
 						rf.persist()
-						rf.mu.Unlock()
 						
 						go rf.sendInstallSnapshot(i, &args, &reply)
 					} else {
@@ -1012,19 +962,16 @@ func (rf *Raft) ticker() {
 								args.Entries = append(args.Entries, rf.logapi.at(j))
 							}
 						}
-						rf.mu.Unlock()
 						go rf.sendAppendEntries(i, &args, &reply)
 					}
 				}
 			}
-			// wg.Wait()
 		case candidate:
-			rf.mu.Unlock()
 			rf.turn2Candidate()
 		case follower:
-			rf.mu.Unlock()
 			rf.turn2Candidate()
 		}
+		rf.mu.Unlock()
 	}
 }
 
