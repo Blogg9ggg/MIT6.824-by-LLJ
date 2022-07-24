@@ -681,7 +681,6 @@ loop:
 }
 
 func TestPersist12C(t *testing.T) {
-	// return
 	servers := 3
 	cfg := make_config(t, servers, false, false)
 	defer cfg.cleanup()
