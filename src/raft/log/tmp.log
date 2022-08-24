@@ -1,0 +1,606 @@
+456343 DROP S3 -> S1 is fail.
+456925 TEST S3 [1] wait
+456504 DROP S3 -> S2 is fail.
+456939 TIMR S3 replicateEntries to S2 at replicator
+457144 DROP S3 -> S4 is fail.
+456978 LOG2 S0(T:166)(state:2) recv [[{166 1700} {166 1702} {166 1701} {166 1703}]] from S3(T:166)
+457227 TIMR S0. timer(150-300)
+457308 LOG1 S3(T:166)(leader) send [[{166 1700} {166 1702} {166 1701} {166 1703}]] to S0
+457310 VOTE S4(T:166) is asked vote by S2(T:167)
+457311 TIMR S4 become follower. timer(150-300)
+457338 VOTE S2(T:167) voted by S4? false.
+457524 LOG2 S0(T:166)(state:2) recv [[{166 1702} {166 1701} {166 1703}]] from S3(T:166)
+457524 TIMR S0. timer(150-300)
+457224 TIMR S3 replicateEntries to S4 at replicator
+457526 VOTE S3(T:166) is asked vote by S2(T:167)
+457526 TIMR S3 become follower. timer(150-300)
+457678 VOTE S0(T:166) is asked vote by S2(T:167)
+457770 VOTE S1(T:166) is asked vote by S2(T:167)
+457770 TIMR S1 become follower. timer(150-300)
+457773 LOG2 S4(T:167)(state:2) recv [[{166 1702} {166 1701} {166 1703}]] from S3(T:166)
+457906 LOG2 S2(T:167)(state:1) recv [[{150 1701} {150 17} {150 1703} {150 1702} {166 1700} {166 1702} {166 1701} {166 1703}]] from S3(T:166)
+458462 LOG2 S4(T:167)(state:2) recv [[{166 1702} {166 1701} {166 1703}]] from S3(T:166)
+458481 LOG2 S2(T:167)(state:1) recv [[{150 1701} {150 17} {150 1703} {150 1702} {166 1700} {166 1702} {166 1701} {166 1703}]] from S3(T:166)
+458493 VOTE S2(T:167) voted by S1? false.
+458596 TIMR S2 become candidate. timer(150-300)
+458838 TIMR S0 become follower. timer(150-300)
+458865 TEST S3 [4] wait
+458865 TEST S3 [2] wait
+458865 TEST S3 [0] wait
+458915 VOTE S4(T:167) is asked vote by S2(T:168)
+458915 TIMR S4 become follower. timer(150-300)
+458916 VOTE S2(T:168) voted by S4? false.
+458942 VOTE S3(T:167) is asked vote by S2(T:168)
+458971 TIMR S3 become follower. timer(150-300)
+458973 VOTE S2(T:168) voted by S3? false.
+459083 VOTE S2(T:168) voted by S3? false.
+459601 VOTE S0(T:167) is asked vote by S2(T:168)
+459602 TIMR S0 become follower. timer(150-300)
+459602 VOTE S1(T:167) is asked vote by S2(T:168)
+459603 TIMR S1 become follower. timer(150-300)
+459603 VOTE S2(T:168) voted by S0? false.
+459835 VOTE S1(T:168) is asked vote by S2(T:168)
+460030 VOTE S1(T:168) is asked vote by S2(T:168)
+460060 VOTE S2(T:168) voted by S1? false.
+460289 VOTE S2(T:168) voted by S0? false.
+460817 TIMR S2 become candidate. timer(150-300)
+460874 TIMR S3 become candidate. timer(150-300)
+460989 TIMR S4 become candidate. timer(150-300)
+461025 VOTE S4(T:169) is asked vote by S2(T:169)
+461150 VOTE S3(T:169) is asked vote by S4(T:169)
+461151 VOTE S4(T:169) voted by S3? false.
+461152 TIMR S0 become candidate. timer(150-300)
+461170 VOTE S2(T:169) is asked vote by S3(T:169)
+461187 VOTE S3(T:169) voted by S2? false.
+461252 VOTE S3(T:169) is asked vote by S2(T:169)
+461253 VOTE S1(T:168) is asked vote by S2(T:169)
+461253 TIMR S1 become follower. timer(150-300)
+461254 VOTE S2(T:169) voted by S1? false.
+461254 VOTE S2(T:169) voted by S3? false.
+461378 VOTE S2(T:169) voted by S4? false.
+461379 VOTE S4(T:169) is asked vote by S3(T:169)
+461380 VOTE S2(T:169) is asked vote by S4(T:169)
+461382 VOTE S1(T:169) is asked vote by S4(T:169)
+461390 VOTE S2(T:169) is asked vote by S0(T:169)
+461390 VOTE S3(T:169) is asked vote by S0(T:169)
+461391 VOTE S4(T:169) is asked vote by S0(T:169)
+461391 VOTE S0(T:169) voted by S4? false.
+461392 VOTE S0(T:169) is asked vote by S4(T:169)
+461392 VOTE S4(T:169) voted by S0? false.
+461401 VOTE S3(T:169) is asked vote by S0(T:169)
+461401 VOTE S0(T:169) voted by S3? false.
+461443 VOTE S1(T:169) is asked vote by S0(T:169)
+461443 TIMR S1 request vote. timer(150-300)
+461496 VOTE S1(T:169) is asked vote by S0(T:169)
+461504 VOTE S0(T:169) voted by S1? false.
+461689 VOTE S0(T:169) is asked vote by S3(T:169)
+461693 VOTE S0(T:169) is asked vote by S2(T:169)
+461693 VOTE S1(T:169) is asked vote by S3(T:169)
+461932 VOTE S3(T:169) voted by S4? false.
+461933 VOTE S4(T:169) voted by S2? false.
+461933 VOTE S4(T:169) voted by S1? false.
+461934 VOTE S2(T:169) is asked vote by S0(T:169)
+462278 VOTE S2(T:169) voted by S0? false.
+462281 VOTE S3(T:169) voted by S1? false.
+462464 VOTE S0(T:169) is asked vote by S3(T:169)
+462569 VOTE S3(T:169) voted by S0? false.
+462550 TIMR S4 become candidate. timer(150-300)
+462659 VOTE S0(T:169) voted by S2? false.
+463025 TIMR S3 become candidate. timer(150-300)
+463153 VOTE S4(T:170) is asked vote by S3(T:170)
+463438 VOTE S0(T:169) is asked vote by S4(T:170)
+463438 TIMR S0 become follower. timer(150-300)
+463674 VOTE S0(T:170) is asked vote by S4(T:170)
+463674 VOTE S4(T:170) voted by S0? false.
+463777 VOTE S3(T:170) is asked vote by S4(T:170)
+463782 VOTE S4(T:170) voted by S3? false.
+463510 TIMR S2 become candidate. timer(150-300)
+463125 TIMR S1 become candidate. timer(150-300)
+464003 VOTE S2(T:170) is asked vote by S4(T:170)
+464012 VOTE S3(T:170) voted by S4? false.
+464015 VOTE S1(T:170) is asked vote by S3(T:170)
+464016 VOTE S2(T:170) is asked vote by S3(T:170)
+464035 VOTE S0(T:170) is asked vote by S3(T:170)
+464036 TIMR S0 request vote. timer(150-300)
+464036 VOTE S3(T:170) voted by S0? true.
+464164 VOTE S4(T:170) voted by S2? false.
+464192 VOTE S1(T:170) is asked vote by S2(T:170)
+464200 TIMR S4 become candidate. timer(150-300)
+464366 VOTE S3(T:170) voted by S2? false.
+464369 VOTE S4(T:171) is asked vote by S2(T:170)
+464378 VOTE S0(T:170) is asked vote by S2(T:170)
+464396 VOTE S1(T:170) is asked vote by S4(T:170)
+464473 VOTE S3(T:170) is asked vote by S2(T:170)
+464480 VOTE S3(T:170) voted by S1? false.
+464481 VOTE S2(T:170) voted by S4? false.
+464481 TIMR S2 become follower. timer(150-300)
+464481 VOTE S2(T:171) voted by S1? false.
+464482 VOTE S4(T:171) voted by S1? false.
+464486 VOTE S2(T:171) voted by S3? false.
+464512 VOTE S2(T:171) is asked vote by S4(T:171)
+464512 TIMR S2 request vote. timer(150-300)
+464522 VOTE S4(T:171) voted by S2? true.
+464627 VOTE S0(T:170) is asked vote by S1(T:170)
+464628 VOTE S1(T:170) voted by S0? false.
+464628 VOTE S3(T:170) is asked vote by S4(T:171)
+464628 TIMR S3 become follower. timer(150-300)
+464629 VOTE S4(T:171) is asked vote by S1(T:170)
+464629 VOTE S4(T:171) voted by S3? false.
+464629 VOTE S1(T:170) voted by S4? false.
+464629 TIMR S1 become follower. timer(150-300)
+464993 VOTE S2(T:171) voted by S0? false.
+465123 VOTE S1(T:171) is asked vote by S4(T:171)
+465124 VOTE S4(T:171) voted by S1? false.
+464909 VOTE S0(T:170) is asked vote by S4(T:171)
+465164 TIMR S0 become follower. timer(150-300)
+465171 VOTE S4(T:171) voted by S0? false.
+465182 VOTE S3(T:171) is asked vote by S1(T:170)
+465447 VOTE S2(T:171) is asked vote by S1(T:170)
+465629 VOTE S1(T:171) voted by S3? false.
+465914 TIMR S4 become candidate. timer(150-300)
+466316 VOTE S1(T:171) voted by S2? false.
+466509 TIMR S3 become candidate. timer(150-300)
+466385 TIMR S2 become candidate. timer(150-300)
+467024 TIMR S0 become candidate. timer(150-300)
+467047 VOTE S4(T:172) is asked vote by S0(T:172)
+467115 VOTE S1(T:171) is asked vote by S3(T:172)
+467229 TIMR S1 become follower. timer(150-300)
+467232 VOTE S3(T:172) voted by S1? true.
+467291 VOTE S1(T:172) is asked vote by S4(T:172)
+467293 VOTE S2(T:172) is asked vote by S4(T:172)
+467322 VOTE S3(T:172) is asked vote by S0(T:172)
+467333 VOTE S0(T:172) is asked vote by S4(T:172)
+467334 VOTE S4(T:172) voted by S0? false.
+467372 VOTE S0(T:172) is asked vote by S3(T:172)
+467402 VOTE S3(T:172) is asked vote by S4(T:172)
+467557 VOTE S0(T:172) voted by S3? false.
+467577 VOTE S4(T:172) voted by S1? false.
+467630 VOTE S1(T:172) is asked vote by S0(T:172)
+467692 VOTE S0(T:172) voted by S1? false.
+467705 VOTE S3(T:172) is asked vote by S4(T:172)
+467711 VOTE S4(T:172) voted by S3? false.
+467831 VOTE S3(T:172) voted by S0? false.
+467833 VOTE S2(T:172) is asked vote by S0(T:172)
+467835 VOTE S4(T:172) is asked vote by S0(T:172)
+467839 VOTE S2(T:172) is asked vote by S3(T:172)
+467997 VOTE S4(T:172) is asked vote by S3(T:172)
+467998 VOTE S3(T:172) voted by S4? false.
+468278 VOTE S0(T:172) voted by S4? false.
+468331 VOTE S1(T:172) is asked vote by S2(T:172)
+468333 VOTE S2(T:172) voted by S1? false.
+468491 VOTE S0(T:172) is asked vote by S2(T:172)
+468491 VOTE S2(T:172) voted by S0? false.
+468582 TIMR S4 become candidate. timer(150-300)
+469112 VOTE S4(T:173) is asked vote by S2(T:172)
+469114 VOTE S3(T:172) voted by S2? false.
+469115 VOTE S4(T:173) voted by S2? false.
+469115 VOTE S0(T:172) voted by S2? false.
+469118 VOTE S3(T:172) is asked vote by S2(T:172)
+469239 VOTE S3(T:172) is asked vote by S4(T:173)
+469239 TIMR S3 become follower. timer(150-300)
+469240 VOTE S0(T:172) is asked vote by S4(T:173)
+469240 TIMR S0 become follower. timer(150-300)
+469421 VOTE S2(T:172) is asked vote by S4(T:173)
+469421 TIMR S2 become follower. timer(150-300)
+469533 VOTE S2(T:173) voted by S4? false.
+469543 VOTE S4(T:173) voted by S2? true.
+469544 VOTE S1(T:172) is asked vote by S4(T:173)
+469544 TIMR S1 become follower. timer(150-300)
+469565 VOTE S2(T:173) voted by S3? false.
+469967 VOTE S4(T:173) voted by S3? false.
+470455 VOTE S4(T:173) voted by S1? false.
+470876 TIMR S4 become candidate. timer(150-300)
+470990 TIMR S3 become candidate. timer(150-300)
+471242 VOTE S3(T:174) is asked vote by S4(T:174)
+471260 VOTE S1(T:173) is asked vote by S4(T:174)
+471260 TIMR S1 become follower. timer(150-300)
+471304 VOTE S0(T:173) is asked vote by S4(T:174)
+471304 TIMR S0 become follower. timer(150-300)
+471319 VOTE S4(T:174) voted by S3? false.
+471413 VOTE S1(T:174) is asked vote by S3(T:174)
+471419 TIMR S1 request vote. timer(150-300)
+471560 VOTE S4(T:174) voted by S0? false.
+471660 VOTE S2(T:174) is asked vote by S3(T:174)
+471661 VOTE S4(T:174) voted by S0? false.
+471598 TIMR S2 become candidate. timer(150-300)
+471686 VOTE S1(T:174) is asked vote by S4(T:174)
+471686 VOTE S4(T:174) voted by S1? false.
+471698 VOTE S2(T:174) is asked vote by S4(T:174)
+471922 VOTE S0(T:174) is asked vote by S3(T:174)
+471923 TIMR S0 request vote. timer(150-300)
+471924 VOTE S4(T:174) is asked vote by S3(T:174)
+471927 VOTE S3(T:174) voted by S1? true.
+472110 VOTE S3(T:174) voted by S4? false.
+472144 VOTE S3(T:174) voted by S2? false.
+472366 VOTE S3(T:174) is asked vote by S2(T:174)
+472367 VOTE S2(T:174) voted by S3? false.
+472477 VOTE S0(T:174) is asked vote by S2(T:174)
+472486 VOTE S2(T:174) voted by S0? false.
+472486 VOTE S1(T:174) is asked vote by S2(T:174)
+472486 VOTE S2(T:174) voted by S1? false.
+472694 VOTE S4(T:174) voted by S2? false.
+472746 VOTE S4(T:174) is asked vote by S2(T:174)
+472937 VOTE S3(T:175) voted by S0? true.
+472947 TIMR S1 become candidate. timer(150-300)
+472910 TIMR S3 become candidate. timer(150-300)
+473217 TIMR S4 become candidate. timer(150-300)
+473586 VOTE S4(T:175) is asked vote by S2(T:174)
+473594 VOTE S3(T:175) is asked vote by S1(T:175)
+473596 VOTE S2(T:174) is asked vote by S1(T:175)
+473596 VOTE S4(T:175) is asked vote by S1(T:175)
+473604 VOTE S0(T:174) is asked vote by S1(T:175)
+473690 VOTE S0(T:174) is asked vote by S3(T:175)
+473761 TIMR S2 become follower. timer(150-300)
+473911 VOTE S1(T:175) voted by S2? true.
+473761 TIMR S0 become follower. timer(150-300)
+474414 VOTE S1(T:175) is asked vote by S3(T:175)
+474417 VOTE S1(T:175) voted by S3? false.
+474493 VOTE S2(T:175) is asked vote by S3(T:175)
+474528 VOTE S3(T:175) voted by S2? false.
+474551 VOTE S3(T:175) voted by S1? false.
+474592 VOTE S4(T:175) is asked vote by S3(T:175)
+474626 TIMR S3 become candidate. timer(150-300)
+474897 TIMR S4 become candidate. timer(150-300)
+474901 VOTE S1(T:175) voted by S0? true.
+474912 VOTE S1(T:175) get 3 votes, become leader.
+474912 TIMR S1(state:0) broadcastEntries(true). timer(100)
+474912 TIMR S1 replicateEntries to S0 at heartbeat
+474912 TIMR S1 replicateEntries to S2 at heartbeat
+474912 TIMR S1 replicateEntries to S3 at heartbeat
+474912 TIMR S1 replicateEntries to S4 at heartbeat
+474925 VOTE S3(T:176) voted by S0? false.
+474938 VOTE S0(T:175) is asked vote by S4(T:175)
+474963 VOTE S4(T:176) is asked vote by S3(T:176)
+475066 VOTE S4(T:176) voted by S0? false.
+475068 VOTE S1(T:175) voted by S4? false.
+475069 VOTE S3(T:176) voted by S4? false.
+475070 VOTE S2(T:175) is asked vote by S3(T:176)
+475070 TIMR S2 become follower. timer(150-300)
+475075 VOTE S1(T:175) is asked vote by S3(T:176)
+475076 TIMR S1 become follower. timer(150-300)
+475079 VOTE S0(T:175) is asked vote by S3(T:176)
+475079 TIMR S0 become follower. timer(150-300)
+475091 DROP S1 -> S2 is fail.
+475118 VOTE S1(T:176) is asked vote by S4(T:175)
+475298 VOTE S3(T:176) voted by S1? true.
+475554 VOTE S4(T:176) voted by S1? false.
+475583 VOTE S3(T:176) voted by S0? true.
+475584 VOTE S3(T:176) get 3 votes, become leader.
+475584 TIMR S3(state:0) broadcastEntries(true). timer(100)
+475584 TIMR S3 replicateEntries to S0 at heartbeat
+475584 TIMR S3 replicateEntries to S1 at heartbeat
+475584 TIMR S3 replicateEntries to S2 at heartbeat
+475584 TIMR S3 replicateEntries to S4 at heartbeat
+475593 VOTE S3(T:176) is asked vote by S4(T:175)
+475751 DROP S3 -> S0 is fail.
+475974 VOTE S3(T:176) is asked vote by S4(T:176)
+475876 DROP S3 -> S4 is fail.
+475999 TIMR S1. timer(150-300)
+476198 VOTE S0(T:176) is asked vote by S4(T:176)
+476199 VOTE S4(T:176) voted by S0? false.
+476245 LOG1 S3(T:176)(leader) start(17)
+476245 TIMR S3(state:0) broadcastEntries(false). timer(100)
+476245 TEST S3 [0] signal
+476245 TEST S3 [1] signal
+476245 TEST S3 [2] signal
+476245 TEST S3 [4] signal
+476245 TIMR S3 replicateEntries to S4 at replicator
+476245 TIMR S2. timer(150-300)
+476525 VOTE S3(T:176) voted by S4? false.
+476876 VOTE S3(T:176) voted by S2? true.
+476941 VOTE S4(T:177) voted by S3? false.
+476721 TIMR S4 become candidate. timer(150-300)
+477047 VOTE S2(T:176) is asked vote by S4(T:176)
+477137 TIMR S3 replicateEntries to S0 at replicator
+477245 TIMR S3(state:0) broadcastEntries(true). timer(100)
+477245 TIMR S3 replicateEntries to S0 at heartbeat
+477245 TIMR S3 replicateEntries to S1 at heartbeat
+477245 TIMR S3 replicateEntries to S2 at heartbeat
+477245 TIMR S3 replicateEntries to S4 at heartbeat
+477326 VOTE S2(T:176) is asked vote by S4(T:177)
+477326 TIMR S2 become follower. timer(150-300)
+477327 VOTE S4(T:177) voted by S2? true.
+477204 TIMR S3 replicateEntries to S1 at replicator
+477204 TIMR S3 replicateEntries to S2 at replicator
+477401 TIMR S0 become candidate. timer(150-300)
+477475 LOG2 S4(T:177)(state:1) recv [[{176 17}]] from S3(T:176)
+477507 DROP S3 -> S4 is fail.
+477507 TIMR S3 replicateEntries to S4 at replicator
+477602 VOTE S1(T:176) is asked vote by S4(T:176)
+477604 VOTE S0(T:177) is asked vote by S4(T:177)
+477604 VOTE S4(T:177) voted by S2? false.
+477612 LOG2 S1(T:176)(state:2) recv [[{176 17}]] from S3(T:176)
+477615 TIMR S1. timer(150-300)
+477612 VOTE S1(T:176) is asked vote by S4(T:177)
+477613 VOTE S3(T:176) is asked vote by S4(T:177)
+477615 TIMR S3 become follower. timer(150-300)
+477613 LOG2 S4(T:177)(state:1) recv [[{176 17}]] from S3(T:176)
+477694 LOG2 S2(T:177)(state:2) recv [[{176 17}]] from S3(T:176)
+477851 VOTE S4(T:177) voted by S3? false.
+477972 LOG2 S0(T:177)(state:1) recv [[{176 17}]] from S3(T:176)
+477972 DROP S3 -> S0 is fail.
+477973 LOG2 S0(T:177)(state:1) recv [[{176 17}]] from S3(T:176)
+478099 VOTE S2(T:177) is asked vote by S0(T:177)
+477972 TEST S3 [0] wait
+478253 VOTE S1(T:176) is asked vote by S0(T:177)
+478253 VOTE S4(T:177) is asked vote by S0(T:177)
+478283 VOTE S0(T:177) voted by S4? false.
+478144 TIMR S1 become follower. timer(150-300)
+478286 VOTE S4(T:177) voted by S0? false.
+478287 LOG2 S4(T:177)(state:1) recv [[{176 17}]] from S3(T:176)
+478287 LOG2 S2(T:177)(state:2) recv [[{150 1701} {150 17} {150 1703} {150 1702} {166 1700} {166 1702} {166 1701} {166 1703} {176 17}]] from S3(T:176)
+478489 VOTE S4(T:177) voted by S1? false.
+478527 LOG2 S1(T:177)(state:2) recv [[{176 17}]] from S3(T:176)
+478527 TEST S3 [1] wait
+479216 TEST S3 [2] wait
+479300 VOTE S3(T:177) is asked vote by S0(T:177)
+479301 VOTE S0(T:177) voted by S2? false.
+479351 TIMR S0 become candidate. timer(150-300)
+479625 TEST S3 [4] wait
+479604 TIMR S4 become candidate. timer(150-300)
+479783 TIMR S3 become candidate. timer(150-300)
+480150 VOTE S1(T:177) is asked vote by S0(T:178)
+480150 TIMR S1 become follower. timer(150-300)
+480177 VOTE S2(T:177) is asked vote by S0(T:178)
+480177 TIMR S2 become follower. timer(150-300)
+480179 VOTE S1(T:178) is asked vote by S4(T:177)
+480179 VOTE S3(T:178) is asked vote by S0(T:178)
+480187 VOTE S1(T:178) is asked vote by S0(T:177)
+480322 VOTE S0(T:178) voted by S1? false.
+480327 VOTE S0(T:178) voted by S3? false.
+480331 VOTE S4(T:178) is asked vote by S0(T:178)
+480592 VOTE S4(T:178) is asked vote by S3(T:178)
+480709 VOTE S1(T:178) is asked vote by S0(T:178)
+480753 VOTE S1(T:178) is asked vote by S0(T:178)
+480753 VOTE S0(T:178) voted by S1? false.
+480943 VOTE S3(T:178) voted by S4? false.
+481021 VOTE S0(T:178) is asked vote by S4(T:178)
+481021 VOTE S4(T:178) voted by S0? false.
+481057 VOTE S3(T:178) is asked vote by S4(T:178)
+481057 VOTE S4(T:178) voted by S3? false.
+481071 VOTE S4(T:178) voted by S1? false.
+481073 VOTE S2(T:178) is asked vote by S3(T:178)
+481076 VOTE S0(T:178) voted by S3? false.
+481137 VOTE S2(T:178) is asked vote by S4(T:178)
+481207 VOTE S0(T:178) is asked vote by S3(T:178)
+481208 VOTE S3(T:178) voted by S0? false.
+481234 VOTE S0(T:178) voted by S4? false.
+481237 VOTE S1(T:178) is asked vote by S4(T:178)
+481335 VOTE S3(T:178) voted by S2? false.
+481341 VOTE S0(T:178) voted by S2? true.
+481564 VOTE S4(T:178) voted by S1? false.
+481570 TIMR S0 become candidate. timer(150-300)
+481614 VOTE S4(T:178) voted by S2? false.
+481631 TIMR S4 become candidate. timer(150-300)
+481654 VOTE S4(T:179) is asked vote by S0(T:179)
+481654 VOTE S0(T:179) voted by S4? false.
+481803 VOTE S3(T:178) is asked vote by S4(T:179)
+481834 VOTE S1(T:178) is asked vote by S4(T:179)
+481899 VOTE S0(T:179) is asked vote by S4(T:179)
+481907 VOTE S2(T:178) is asked vote by S4(T:179)
+481907 TIMR S2 become follower. timer(150-300)
+482110 VOTE S2(T:179) is asked vote by S0(T:179)
+482111 VOTE S0(T:179) is asked vote by S4(T:179)
+482111 VOTE S4(T:179) voted by S0? false.
+481894 TIMR S3 become follower. timer(150-300)
+481894 TIMR S1 become candidate. timer(150-300)
+482716 VOTE S4(T:179) voted by S1? false.
+482727 VOTE S3(T:179) is asked vote by S1(T:179)
+482748 VOTE S1(T:179) is asked vote by S0(T:179)
+482749 VOTE S0(T:179) voted by S2? false.
+482750 VOTE S1(T:179) is asked vote by S3(T:178)
+482793 VOTE S2(T:179) is asked vote by S4(T:179)
+482793 VOTE S4(T:179) voted by S2? false.
+482823 VOTE S4(T:179) is asked vote by S1(T:179)
+482823 VOTE S1(T:179) voted by S4? false.
+482914 VOTE S0(T:179) voted by S1? false.
+482937 VOTE S2(T:179) is asked vote by S1(T:179)
+482944 VOTE S1(T:179) voted by S2? false.
+482955 VOTE S3(T:179) is asked vote by S0(T:179)
+483226 VOTE S0(T:179) is asked vote by S1(T:179)
+483390 TIMR S0 become candidate. timer(150-300)
+483441 VOTE S0(T:180) is asked vote by S1(T:179)
+483441 VOTE S1(T:179) voted by S0? false.
+483441 TIMR S1 become follower. timer(150-300)
+483441 TIMR S4 become candidate. timer(150-300)
+483442 VOTE S0(T:180) is asked vote by S4(T:180)
+483443 VOTE S4(T:180) voted by S0? false.
+483448 VOTE S1(T:180) is asked vote by S0(T:180)
+483453 VOTE S1(T:180) is asked vote by S4(T:180)
+483454 VOTE S4(T:180) voted by S1? false.
+483591 VOTE S2(T:179) is asked vote by S0(T:180)
+483591 TIMR S2 become follower. timer(150-300)
+483592 VOTE S0(T:180) voted by S2? true.
+483596 VOTE S3(T:179) is asked vote by S0(T:180)
+483734 VOTE S3(T:179) is asked vote by S4(T:180)
+483763 VOTE S1(T:180) is asked vote by S0(T:180)
+483763 VOTE S0(T:180) voted by S1? false.
+483911 VOTE S4(T:180) is asked vote by S0(T:180)
+483911 VOTE S0(T:180) voted by S4? false.
+483365 TIMR S3 request vote. timer(150-300)
+483948 VOTE S3(T:179) voted by S1? false.
+484125 VOTE S4(T:180) voted by S3? false.
+484687 TIMR S3 become follower. timer(150-300)
+485007 VOTE S2(T:180) is asked vote by S4(T:180)
+485123 VOTE S1(T:180) voted by S3? true.
+485220 VOTE S4(T:180) voted by S2? false.
+485355 TIMR S2 become candidate. timer(150-300)
+485591 TIMR S1 become candidate. timer(150-300)
+485692 VOTE S4(T:180) is asked vote by S1(T:181)
+485693 TIMR S4 become follower. timer(150-300)
+485813 TIMR S0 become candidate. timer(150-300)
+485856 VOTE S0(T:181) is asked vote by S1(T:181)
+485906 VOTE S3(T:180) is asked vote by S1(T:181)
+485906 TIMR S3 become follower. timer(150-300)
+486047 VOTE S2(T:181) is asked vote by S1(T:181)
+486058 VOTE S4(T:181) voted by S3? false.
+486304 VOTE S1(T:181) voted by S2? false.
+486311 VOTE S0(T:181) voted by S3? false.
+486389 VOTE S0(T:181) is asked vote by S2(T:181)
+486400 VOTE S2(T:181) voted by S0? false.
+486402 VOTE S1(T:181) is asked vote by S2(T:181)
+486402 VOTE S2(T:181) voted by S1? false.
+486403 VOTE S3(T:181) is asked vote by S2(T:181)
+486406 VOTE S4(T:181) is asked vote by S2(T:181)
+486419 VOTE S1(T:181) voted by S4? true.
+486621 VOTE S1(T:181) voted by S3? true.
+486622 VOTE S1(T:181) get 3 votes, become leader.
+486622 TIMR S1(state:0) broadcastEntries(true). timer(100)
+486622 TIMR S1 replicateEntries to S0 at heartbeat
+486622 TIMR S1 replicateEntries to S2 at heartbeat
+486622 TIMR S1 replicateEntries to S3 at heartbeat
+486622 TIMR S1 replicateEntries to S4 at heartbeat
+486626 VOTE S2(T:181) voted by S4? false.
+486758 VOTE S3(T:181) is asked vote by S0(T:181)
+486759 VOTE S0(T:181) voted by S3? false.
+486894 VOTE S1(T:181) voted by S0? false.
+487270 VOTE S1(T:181) is asked vote by S0(T:181)
+487274 VOTE S4(T:181) is asked vote by S0(T:181)
+486836 TIMR S4. timer(150-300)
+487506 VOTE S0(T:181) voted by S1? false.
+487594 VOTE S2(T:182) is asked vote by S0(T:181)
+487551 TIMR S2 become candidate. timer(150-300)
+487803 TIMR S3. timer(150-300)
+487670 TIMR S1(state:0) broadcastEntries(true). timer(100)
+487871 TIMR S1 replicateEntries to S0 at heartbeat
+487871 TIMR S1 replicateEntries to S2 at heartbeat
+487871 TIMR S1 replicateEntries to S3 at heartbeat
+487871 TIMR S1 replicateEntries to S4 at heartbeat
+487873 VOTE S0(T:181) voted by S4? false.
+487875 TIMR S0 become follower. timer(150-300)
+487878 VOTE S3(T:181) is asked vote by S2(T:181)
+487983 TIMR S4. timer(150-300)
+488014 VOTE S0(T:181) voted by S2? false.
+488014 TIMR S0 become follower. timer(150-300)
+488015 TIMR S1 become follower. timer(150-300)
+488280 VOTE S4(T:181) is asked vote by S2(T:182)
+488280 TIMR S4 become follower. timer(150-300)
+488293 VOTE S2(T:182) voted by S3? false.
+488679 VOTE S3(T:181) is asked vote by S2(T:182)
+488680 TIMR S3 become follower. timer(150-300)
+488681 VOTE S2(T:182) voted by S3? false.
+488682 VOTE S1(T:182) is asked vote by S2(T:182)
+488936 VOTE S4(T:182) is asked vote by S2(T:182)
+488954 VOTE S2(T:182) voted by S4? false.
+488977 VOTE S2(T:182) voted by S1? false.
+488989 VOTE S0(T:182) is asked vote by S2(T:182)
+488989 VOTE S2(T:182) voted by S0? false.
+490068 TIMR S2 become candidate. timer(150-300)
+490663 TIMR S3 become candidate. timer(150-300)
+490764 TIMR S0 become candidate. timer(150-300)
+490855 TIMR S1 become candidate. timer(150-300)
+490914 VOTE S1(T:183) is asked vote by S2(T:183)
+490920 TIMR S4 become candidate. timer(150-300)
+491080 VOTE S1(T:183) is asked vote by S0(T:183)
+491139 VOTE S2(T:183) is asked vote by S0(T:183)
+491139 VOTE S0(T:183) voted by S2? false.
+491169 VOTE S3(T:183) is asked vote by S2(T:183)
+491170 VOTE S4(T:183) is asked vote by S2(T:183)
+491389 VOTE S4(T:183) is asked vote by S0(T:183)
+491555 VOTE S0(T:183) voted by S4? false.
+491559 VOTE S3(T:183) is asked vote by S0(T:183)
+491667 VOTE S0(T:183) is asked vote by S2(T:183)
+491679 VOTE S2(T:183) voted by S0? false.
+491764 VOTE S1(T:183) is asked vote by S4(T:183)
+491769 VOTE S2(T:183) voted by S4? false.
+491835 VOTE S4(T:183) voted by S1? false.
+491872 VOTE S2(T:183) voted by S3? false.
+491873 VOTE S0(T:183) voted by S3? false.
+491910 VOTE S2(T:183) is asked vote by S4(T:183)
+491910 VOTE S4(T:183) voted by S2? false.
+491910 VOTE S4(T:183) is asked vote by S1(T:183)
+491911 VOTE S1(T:183) voted by S4? false.
+492002 VOTE S4(T:183) is asked vote by S3(T:183)
+492003 VOTE S3(T:183) voted by S4? false.
+492030 VOTE S3(T:183) is asked vote by S1(T:183)
+492071 VOTE S3(T:183) is asked vote by S4(T:183)
+492074 VOTE S2(T:183) voted by S1? false.
+492075 VOTE S0(T:183) voted by S1? false.
+492081 VOTE S2(T:183) is asked vote by S3(T:183)
+492084 VOTE S1(T:183) is asked vote by S3(T:183)
+492193 VOTE S0(T:183) is asked vote by S3(T:183)
+492195 VOTE S3(T:183) voted by S0? false.
+492689 TIMR S1 become candidate. timer(150-300)
+492843 VOTE S3(T:183) voted by S1? false.
+492843 VOTE S4(T:183) voted by S3? false.
+493149 VOTE S0(T:184) is asked vote by S1(T:183)
+492986 TIMR S0 become candidate. timer(150-300)
+493150 VOTE S3(T:183) is asked vote by S1(T:183)
+493151 VOTE S2(T:183) is asked vote by S1(T:183)
+493152 VOTE S0(T:184) is asked vote by S4(T:183)
+493152 VOTE S3(T:183) voted by S2? false.
+493338 TIMR S2 become candidate. timer(150-300)
+493542 VOTE S1(T:184) voted by S2? false.
+493549 TIMR S4 become candidate. timer(150-300)
+493551 VOTE S1(T:184) is asked vote by S2(T:184)
+493889 VOTE S0(T:184) is asked vote by S2(T:184)
+493897 VOTE S1(T:184) is asked vote by S4(T:184)
+493897 VOTE S1(T:184) voted by S3? false.
+493746 TIMR S3 become candidate. timer(150-300)
+493898 VOTE S3(T:184) is asked vote by S2(T:184)
+493899 VOTE S2(T:184) voted by S3? false.
+493899 VOTE S2(T:184) is asked vote by S4(T:184)
+493899 VOTE S4(T:184) voted by S2? false.
+493900 VOTE S3(T:184) is asked vote by S4(T:184)
+493900 VOTE S4(T:184) voted by S3? false.
+493904 VOTE S4(T:184) is asked vote by S2(T:184)
+494019 VOTE S4(T:184) is asked vote by S3(T:184)
+494020 VOTE S3(T:184) voted by S4? false.
+494071 VOTE S4(T:184) is asked vote by S2(T:184)
+494072 VOTE S2(T:184) voted by S4? false.
+494233 VOTE S0(T:184) is asked vote by S4(T:184)
+494357 VOTE S4(T:184) is asked vote by S1(T:184)
+494359 VOTE S1(T:184) is asked vote by S0(T:184)
+494432 VOTE S2(T:184) voted by S1? false.
+494435 VOTE S1(T:184) voted by S0? false.
+494490 VOTE S4(T:184) voted by S1? false.
+494518 VOTE S1(T:184) is asked vote by S3(T:184)
+494520 VOTE S3(T:184) is asked vote by S0(T:184)
+494537 VOTE S0(T:184) voted by S3? false.
+494555 VOTE S3(T:184) is asked vote by S1(T:184)
+494556 VOTE S1(T:184) voted by S3? false.
+494565 VOTE S2(T:184) is asked vote by S0(T:184)
+494565 VOTE S0(T:184) voted by S2? false.
+494570 VOTE S4(T:184) voted by S0? false.
+494571 VOTE S4(T:184) voted by S0? false.
+494572 VOTE S0(T:184) voted by S1? false.
+494668 VOTE S0(T:184) is asked vote by S3(T:184)
+494669 VOTE S3(T:184) voted by S0? false.
+494724 VOTE S0(T:184) is asked vote by S1(T:184)
+494724 VOTE S1(T:184) voted by S0? false.
+495108 VOTE S1(T:184) voted by S4? false.
+495109 TIMR S1 become candidate. timer(150-300)
+495149 VOTE S0(T:184) is asked vote by S1(T:185)
+495149 TIMR S0 become follower. timer(150-300)
+495163 VOTE S0(T:185) is asked vote by S2(T:184)
+495165 VOTE S3(T:184) voted by S1? false.
+495248 TIMR S4 become candidate. timer(150-300)
+495332 VOTE S2(T:185) is asked vote by S4(T:185)
+495441 VOTE S0(T:185) is asked vote by S4(T:185)
+495442 VOTE S4(T:185) voted by S0? false.
+495449 VOTE S4(T:185) is asked vote by S1(T:185)
+495450 VOTE S1(T:185) voted by S4? false.
+495256 TIMR S2 become candidate. timer(150-300)
+495471 VOTE S2(T:185) is asked vote by S1(T:184)
+495473 VOTE S2(T:185) is asked vote by S3(T:184)
+495474 VOTE S4(T:185) is asked vote by S0(T:184)
+495631 VOTE S3(T:184) is asked vote by S1(T:185)
+495631 TIMR S3 become follower. timer(150-300)
+495795 VOTE S2(T:185) is asked vote by S1(T:185)
+495811 VOTE S1(T:185) is asked vote by S4(T:185)
+495835 VOTE S3(T:185) is asked vote by S1(T:185)
+495835 VOTE S1(T:185) voted by S3? false.
+495837 VOTE S4(T:185) voted by S1? false.
+495887 VOTE S2(T:185) voted by S0? false.
+495972 VOTE S0(T:185) voted by S4? false.
+496123 VOTE S0(T:185) is asked vote by S1(T:185)
+496124 VOTE S1(T:185) voted by S0? false.
+496267 VOTE S1(T:185) voted by S2? false.
+496270 VOTE S1(T:185) is asked vote by S2(T:185)
+496271 VOTE S2(T:185) voted by S1? false.
+496277 VOTE S4(T:185) is asked vote by S2(T:185)
+496279 VOTE S2(T:185) voted by S4? false.
+496300 VOTE S3(T:185) voted by S2? false.
+496477 VOTE S1(T:185) voted by S2? false.
+496779 VOTE S0(T:185) is asked vote by S2(T:185)
+496780 VOTE S2(T:185) voted by S0? false.

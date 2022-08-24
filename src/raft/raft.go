@@ -19,14 +19,11 @@ const (
 	candidate 				int = 1
 	follower 				int = 2
 
-	// election_timeout		int32 = 150	// 150 - 300
-	// append_entries_timeout	int32 = 100
+	election_timeout		int32 = 150	// 150 - 300
+	append_entries_timeout	int32 = 100
 
-	election_timeout		int32 = 100
-	append_entries_timeout	int32 = 70
-
-	// election_timeout		int32 = 600
-	// append_entries_timeout	int32 = 1000
+	// election_timeout		int32 = 100
+	// append_entries_timeout	int32 = 70
 )
 
 // for apply
@@ -189,7 +186,7 @@ func (rf *Raft) applier() {
 			Command:		rf.logapi.at(rf.lastApplied).Data,
 			CommandIndex:	rf.lastApplied,
 		}
-		Debug(dCommit, "S%d(T:%d), apply(log[%d] = %v)\n", rf.me, rf.currentTerm, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
+		// Debug(dCommit, "S%d(T:%d), apply(log[%d] = %v)\n", rf.me, rf.currentTerm, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
 		// DPrintf("SERVER #%d: apply(log[%d] = (%v))\n", rf.me, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
 		rf.mu.Unlock()
 		rf.applyChan <- tmpApplyMsg
@@ -246,7 +243,7 @@ func (rf *Raft) updateCommitIndex(newComInd int) {
 // if currentTerm change, votedFor must change
 func (rf *Raft) turn2Follower(vot int, cur int, resetTimer bool) {
 	if resetTimer {
-		Debug(dTimer, "S%d become follower. timer(100-250)\n", rf.me)
+		Debug(dTimer, "S%d become follower. timer(150-300)\n", rf.me)
 		rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 	}
 
@@ -274,7 +271,7 @@ func (rf *Raft) turn2Candidate() {
 	rf.needPersist = true
 
 	// Reset election timer
-	Debug(dTimer, "S%d become candidate. timer(100-250)\n", rf.me)
+	Debug(dTimer, "S%d become candidate. timer(150-300)\n", rf.me)
 	rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 
 	for i := 0; i < len(rf.peers); i++ {
@@ -397,7 +394,7 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		case candidate:
 			rf.turn2Follower(rf.me, args.Term, true)
 		case follower:
-			Debug(dTimer, "S%d become follower because snapshot. timer(100-250)\n", rf.me)
+			Debug(dTimer, "S%d become follower because snapshot. timer(150-300)\n", rf.me)
 			rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 		}
 	}
@@ -521,6 +518,8 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		reply.VoteGranted = false
 		return
 	}
+
+	Debug(dVote, "S%d(T:%d) is asked vote by S%d(T:%d)\n", rf.me, rf.currentTerm, args.CandidateId, args.Term)
 	
 	// Reply false if term < currentTerm (&5.1)
 	rf.mu.Lock()
@@ -547,7 +546,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.turn2Follower(args.CandidateId, args.Term, true)
 			} else {
 				reply.VoteGranted = false
-				rf.turn2Follower(-1, args.Term, false)
+				rf.turn2Follower(-1, args.Term, true)	// 争议
 			}
 		} else {
 			reply.Term = rf.currentTerm
@@ -561,7 +560,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.turn2Follower(args.CandidateId, args.Term, true)
 			} else {
 				reply.VoteGranted = false
-				rf.turn2Follower(-1, args.Term, false)
+				rf.turn2Follower(-1, args.Term, true)	// 争议
 			}
 		} else {
 			reply.Term = rf.currentTerm
@@ -575,7 +574,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.turn2Follower(args.CandidateId, args.Term, true)
 			} else {
 				reply.VoteGranted = false
-				rf.turn2Follower(-1, args.Term, false)
+				rf.turn2Follower(-1, args.Term, true)	// 争议
 			}
 		} else if args.Term == rf.currentTerm {
 			reply.Term = args.Term
@@ -583,7 +582,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.votedFor = args.CandidateId
 				rf.needPersist = true
 				reply.VoteGranted = true
-				Debug(dTimer, "S%d request vote. timer(100-250)\n", rf.me)
+				Debug(dTimer, "S%d request vote. timer(150-300)\n", rf.me)
 				rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 			} else {
 				reply.VoteGranted = false
@@ -616,20 +615,21 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	rf.persist()
 	rf.mu.Unlock()
 
-	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
-	if !ok {
+	if !rf.peers[server].Call("Raft.RequestVote", args, reply) {
 		// 内置重试
 		reply = &RequestVoteReply{}
 		go rf.sendRequestVote(server, args, reply)
 		return
 	}
+	
+	Debug(dVote, "S%d(T:%d) voted by S%d? %v.\n", rf.me, rf.currentTerm, server, reply.VoteGranted)
 
 	
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 
 	if reply.Term > rf.currentTerm {// reply.Success must be false
-		rf.turn2Follower(-1, reply.Term, false)
+		rf.turn2Follower(-1, reply.Term, true)
 		return
 	}
 
@@ -689,7 +689,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			rf.votedFor = args.LeaderId
 			rf.needPersist = true
 		}
-		Debug(dTimer, "S%d. timer(100-250)\n", rf.me)
+		Debug(dTimer, "S%d. timer(150-300)\n", rf.me)
 		rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 	}
 
@@ -766,7 +766,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 
 	if reply.Term > rf.currentTerm {
 		// reply.Success 一定是 false
-		rf.turn2Follower(-1, reply.Term, false)
+		rf.turn2Follower(-1, reply.Term, true)
 		return
 	}
 
@@ -792,8 +792,8 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 		} else {
 			rf.nextIndex[server] = Min(tmpInd + 1, rf.logapi.tailIndex() + 1)
 		}
-		Debug(dTest, "S%d [%d] signal\n", rf.me, server)
-		rf.replicatorCond[server].Signal()
+		// Debug(dTest, "S%d [%d] signal\n", rf.me, server)
+		// rf.replicatorCond[server].Signal()
 	}
 }
 
@@ -822,7 +822,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	rf.mu.Lock()
 	index := rf.logapi.tailIndex() + 1
 	term := rf.currentTerm
-	isLeader := (rf.state == 0)
+	isLeader := (rf.state == leader)
 
 	if isLeader {
 		newLogEntry := LogEntry{
@@ -832,7 +832,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 		rf.logapi.log = append(rf.logapi.log, newLogEntry)
 		rf.needPersist = true
 		Debug(dLog, "S%d(T:%d)(leader) start(%v)\n", rf.me, rf.currentTerm, newLogEntry.Data)
-		rf.broadcastEntries(true)
+		rf.broadcastEntries(false)
 	}
 	rf.mu.Unlock()
 	
@@ -883,8 +883,6 @@ func (rf *Raft) genInitAppendEntriesArgs(index int) AppendEntriesArgs {
 // The ticker go routine starts a new election if this peer hasn't received
 // heartsbeats recently.
 func (rf *Raft) ticker() {
-	rand.Seed(makeSeed())
-
 	for rf.killed() == false {
 		// Your code here to check if a leader election should
 		// be started and to randomize sleeping time using
@@ -957,7 +955,7 @@ func (rf *Raft) replicateEntries(peer int) {
 }
 func (rf *Raft) broadcastEntries(isHeartBeat bool) {
 	// TODO: 现在要解决的问题就是 "幽灵复现" 的问题？ 研究好 test-1.err 中的 FAIL: TestCount2B
-	Debug(dTimer, "S%d(state:%d) broadcastEntries(%v). timer(70)\n", rf.me, rf.state, isHeartBeat)
+	Debug(dTimer, "S%d(state:%d) broadcastEntries(%v). timer(100)\n", rf.me, rf.state, isHeartBeat)
 	rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
 	
 	for i := 0; i < len(rf.peers); i++ {
@@ -974,6 +972,14 @@ func (rf *Raft) broadcastEntries(isHeartBeat bool) {
 	}
 }
 
+func (rf *Raft) test_timer() {
+	test_timer := time.NewTimer(100 * time.Millisecond)
+	for rf.killed() == false {
+		<- test_timer.C
+		Debug(dInfo, "S%d: test timer.\n", rf.me)
+		test_timer.Reset(100 * time.Millisecond)
+	}
+}
 //
 // the service or tester wants to create a Raft server. the ports
 // of all the Raft servers (including this one) are in peers[]. this
@@ -987,7 +993,10 @@ func (rf *Raft) broadcastEntries(isHeartBeat bool) {
 //
 func Make(peers []*labrpc.ClientEnd, me int,
 	persister *Persister, applyCh chan ApplyMsg) *Raft {
+	
+	// TODO: 1. 修改定时器(必做); 2. 加入 no-op 功能
 	DebugInit()
+	rand.Seed(makeSeed())
 
 	rf := &Raft{
 		peers: peers,
