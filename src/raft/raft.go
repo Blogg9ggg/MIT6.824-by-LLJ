@@ -237,14 +237,25 @@ func (rf *Raft) updateCommitIndex(newComInd int) {
 	rf.applyCond.Signal()
 }
 
-
+func (rf *Raft) timerReset(eTimeout bool) {
+	if !rf.timer.Stop() {
+		select {
+		case <-rf.timer.C: // try to drain the channel
+		default:
+		}
+	}
+	if eTimeout {
+		rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
+	}
+	
+}
 
 // change state (before the function)
 // if currentTerm change, votedFor must change
 func (rf *Raft) turn2Follower(vot int, cur int, resetTimer bool) {
 	if resetTimer {
 		Debug(dTimer, "S%d become follower. timer(150-300)\n", rf.me)
-		rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
+		rf.timerReset(true)
 	}
 
 	if cur == rf.currentTerm {
@@ -272,7 +283,8 @@ func (rf *Raft) turn2Candidate() {
 
 	// Reset election timer
 	Debug(dTimer, "S%d become candidate. timer(150-300)\n", rf.me)
-	rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
+	rf.timerReset(true)
+	// rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 
 	for i := 0; i < len(rf.peers); i++ {
 		if i != rf.me {
@@ -395,7 +407,8 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 			rf.turn2Follower(rf.me, args.Term, true)
 		case follower:
 			Debug(dTimer, "S%d become follower because snapshot. timer(150-300)\n", rf.me)
-			rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
+			rf.timerReset(true)
+			// rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 		}
 	}
 
@@ -583,7 +596,8 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.needPersist = true
 				reply.VoteGranted = true
 				Debug(dTimer, "S%d request vote. timer(150-300)\n", rf.me)
-				rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
+				rf.timerReset(true)
+				// rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 			} else {
 				reply.VoteGranted = false
 			}
@@ -690,7 +704,8 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			rf.needPersist = true
 		}
 		Debug(dTimer, "S%d. timer(150-300)\n", rf.me)
-		rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
+		rf.timerReset(true)
+		// rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
 	}
 
 	// 
@@ -956,7 +971,8 @@ func (rf *Raft) replicateEntries(peer int) {
 func (rf *Raft) broadcastEntries(isHeartBeat bool) {
 	// TODO: 现在要解决的问题就是 "幽灵复现" 的问题？ 研究好 test-1.err 中的 FAIL: TestCount2B
 	Debug(dTimer, "S%d(state:%d) broadcastEntries(%v). timer(100)\n", rf.me, rf.state, isHeartBeat)
-	rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
+	rf.timerReset(true)
+	// rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
 	
 	for i := 0; i < len(rf.peers); i++ {
 		if i == rf.me {
