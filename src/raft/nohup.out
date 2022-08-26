@@ -1,0 +1,80 @@
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_8.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_16.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_22.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_24.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_26.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_28.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_39.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_55.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_68.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_106.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_108.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_125.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_126.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_131.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_133.log
+┏━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Test ┃ Failed ┃ Total ┃         Time ┃
+┡━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━┩
+│ 2B   │      0 │   500 │ 38.17 ± 1.28 │
+└──────┴────────┴───────┴──────────────┘
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_150.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_153.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_154.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_164.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_170.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_187.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_190.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_194.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_203.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_207.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_210.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_216.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_219.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_232.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_259.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_261.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_271.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_274.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_278.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_282.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_287.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_303.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_308.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_325.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_327.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_332.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_342.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_349.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_352.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_356.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_360.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_374.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_379.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_381.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_386.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_389.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_394.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_401.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_402.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_421.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_425.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_426.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_427.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_448.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_450.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_460.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_493.log
+Failed test 2C - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2C_497.log
+┏━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Test ┃ Failed ┃ Total ┃          Time ┃
+┡━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ 2C   │     63 │   500 │ 130.46 ± 5.46 │
+└──────┴────────┴───────┴───────────────┘
+Failed test 2D - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2D_307.log
+Failed test 2D - /home/a401/llj/MIT6.824-by-LLJ/src/raft/log/2D_494.log
+┏━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Test ┃ Failed ┃ Total ┃          Time ┃
+┡━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ 2D   │      2 │   500 │ 261.59 ± 9.50 │
+└──────┴────────┴───────┴───────────────┘

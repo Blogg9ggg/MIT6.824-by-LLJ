@@ -10,7 +10,6 @@ import (
 
 	"time"
 	"math/rand"
-	// "fmt"
 )
 
 // constant 
@@ -112,8 +111,9 @@ func (la *logAPI) shrinkLogsArray() {
 	}
 }
 func (la *logAPI) cutLogsArray(ind int) {
-	la.log[la.index(ind + 1)] = LogEntry{}
-	la.log = la.log[:la.index(ind + 1)]
+	// la.log[la.index(ind + 1)] = LogEntry{}
+	// la.log = la.log[:la.index(ind + 1)]
+	la.log = append([]LogEntry{}, la.log[:la.index(ind + 1)]...)
 }
 func (la *logAPI) logCompression(ind int) {
 	la.log = append([]LogEntry{}, la.log[la.index(ind):]...)
@@ -237,25 +237,33 @@ func (rf *Raft) updateCommitIndex(newComInd int) {
 	rf.applyCond.Signal()
 }
 
-func (rf *Raft) timerReset(eTimeout bool) {
+func (rf *Raft) timerReset(timeout int32) {
 	if !rf.timer.Stop() {
 		select {
 		case <-rf.timer.C: // try to drain the channel
 		default:
 		}
 	}
-	if eTimeout {
-		rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
-	}
-	
+
+	rf.timer.Reset(time.Duration(timeout) * time.Millisecond)
+
+	// if eTimeout {
+	// 	rf.timer.Reset(time.Duration(election_timeout + rand.Int31() % 151) * time.Millisecond)
+	// } else {
+	// 	rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
+	// }
+}
+func genETimeout() int32 {
+	return election_timeout + rand.Int31() % 151
 }
 
 // change state (before the function)
 // if currentTerm change, votedFor must change
 func (rf *Raft) turn2Follower(vot int, cur int, resetTimer bool) {
 	if resetTimer {
-		Debug(dTimer, "S%d become follower. timer(150-300)\n", rf.me)
-		rf.timerReset(true)
+		Detmp := genETimeout()
+		Debug(dTimer, "S%d(T:%d) turn to follower. timer(%d)\n", rf.me, rf.currentTerm, Detmp)
+		rf.timerReset(Detmp)
 	}
 
 	if cur == rf.currentTerm {
@@ -282,9 +290,9 @@ func (rf *Raft) turn2Candidate() {
 	rf.needPersist = true
 
 	// Reset election timer
-	Debug(dTimer, "S%d become candidate. timer(150-300)\n", rf.me)
-	rf.timerReset(true)
-	// rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
+	Detmp := genETimeout()
+	Debug(dTimer, "S%d(T:%d) turn to candidate. timer(%d)\n", rf.me, rf.currentTerm, Detmp)
+	rf.timerReset(Detmp)
 
 	for i := 0; i < len(rf.peers); i++ {
 		if i != rf.me {
@@ -306,7 +314,8 @@ func (rf *Raft) turn2Candidate() {
 }
 
 func (rf *Raft) turn2Leader() {
-	Debug(dVote, "S%d(T:%d) get %d votes, become leader.\n", rf.me, rf.currentTerm, rf.yes_vote)
+	Debug(dLeader, "S%d(T:%d) turn to leader\n", rf.me, rf.currentTerm)
+	// Debug(dVote, "S%d(T:%d) get %d votes, become leader.\n", rf.me, rf.currentTerm, rf.yes_vote)
 	rf.state = leader
 	nextIndex_ := rf.logapi.tailIndex() + 1
 	for i := 0; i < len(rf.peers); i++ {
@@ -406,9 +415,7 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		case candidate:
 			rf.turn2Follower(rf.me, args.Term, true)
 		case follower:
-			Debug(dTimer, "S%d become follower because snapshot. timer(150-300)\n", rf.me)
-			rf.timerReset(true)
-			// rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
+			rf.timerReset(genETimeout())
 		}
 	}
 
@@ -531,12 +538,15 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		reply.VoteGranted = false
 		return
 	}
-
-	Debug(dVote, "S%d(T:%d) is asked vote by S%d(T:%d)\n", rf.me, rf.currentTerm, args.CandidateId, args.Term)
 	
 	// Reply false if term < currentTerm (&5.1)
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
+
+	Debug(dVote, "S%d(T:%d)(lastT:%d, lastID:%d) is asked vote by S%d(T:%d)(lastT:%d, lastID:%d)\n", 
+		rf.me, rf.currentTerm, rf.logapi.tail().Term, rf.logapi.tailIndex(), 
+		args.CandidateId, args.Term, args.LastLogTerm, args.LastLogIndex)
+
 	if args.Term < rf.currentTerm {
 		reply.Term = rf.currentTerm
 		reply.VoteGranted = false
@@ -595,9 +605,10 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.votedFor = args.CandidateId
 				rf.needPersist = true
 				reply.VoteGranted = true
-				Debug(dTimer, "S%d request vote. timer(150-300)\n", rf.me)
-				rf.timerReset(true)
-				// rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
+				// Debug(dTimer, "S%d request vote. timer(150-300)\n", rf.me)
+				Detmp := genETimeout()
+				Debug(dTimer, "S%d(T:%d)(follower) reset timer(%d)\n", rf.me, rf.currentTerm, Detmp)
+				rf.timerReset(Detmp)
 			} else {
 				reply.VoteGranted = false
 			}
@@ -636,7 +647,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 		return
 	}
 	
-	Debug(dVote, "S%d(T:%d) voted by S%d? %v.\n", rf.me, rf.currentTerm, server, reply.VoteGranted)
+	Debug(dVote, "S%d(T:%d) voted by S%d(T:%d)? %v.\n", rf.me, rf.currentTerm, server, reply.Term, reply.VoteGranted)
 
 	
 	rf.mu.Lock()
@@ -666,16 +677,17 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply) {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
+	
+	if len(args.Entries) > 0 {
+		Debug(dLog2, "S%d(T:%d, state = %d, follower?) recv entries(last_one(T:%d)) from S%d(T:%d)\n", 
+			rf.me, rf.currentTerm, rf.state, args.Entries[len(args.Entries)-1].Term, args.LeaderId, args.Term)
+	}
 
 	reply.Success = false
 	reply.Term = rf.currentTerm
 
-	if len(args.Entries) > 0 {
-		Debug(dLog2, "S%d(T:%d)(state:%d) recv [%v] from S%d(T:%d)\n", rf.me, rf.currentTerm, rf.state, args.Entries, args.LeaderId, args.Term)
-	}
-	defer rf.logapi.logDebug(rf.me)
-
 	if args.Term < rf.currentTerm {
+		Debug(dClient, "AppendEntries: S%d newer than fake leader S%d\n", rf.me, args.LeaderId)
 		rf.persist()
 		return
 	}
@@ -703,9 +715,9 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			rf.votedFor = args.LeaderId
 			rf.needPersist = true
 		}
-		Debug(dTimer, "S%d. timer(150-300)\n", rf.me)
-		rf.timerReset(true)
-		// rf.timer.Reset(time.Duration(election_timeout+rand.Int31() % 151) * time.Millisecond)
+		Detmp := genETimeout()
+		Debug(dTimer, "S%d(T:%d)(follower) reset timer(%d)\n", rf.me, rf.currentTerm, Detmp)
+		rf.timerReset(Detmp)
 	}
 
 	// 
@@ -734,16 +746,26 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 				}
 			} else {
 				rf.logapi.log = append(rf.logapi.log, args.Entries[i])
-				needCut = true
+				needCut = false
 			}
 		}
 		// 一定要把后面多余的日志删掉！
 		if args.PrevLogIndex + len(args.Entries) < rf.logapi.tailIndex() && needCut {
 			rf.logapi.cutLogsArray(args.PrevLogIndex + len(args.Entries))
 		}
+
+		if len(args.Entries) > 0 &&
+		((rf.logapi.tailIndex() != args.PrevLogIndex + len(args.Entries) ||
+		rf.logapi.tail().Term != args.Entries[len(args.Entries) - 1].Term)) {
+			Debug(dError, "S%d @AppendEntries, last(T:%d, ID:%d), rf.log:%v, entries:%v\n", 
+			rf.me, rf.logapi.tail().Term, rf.logapi.tailIndex(), rf.logapi.log, args.Entries)
+		}
 		
 		rf.needPersist = true
 	}
+
+	Debug(dLog2, "S%d(T:%d) from S%d(T:%d). result: %v)\n", 
+			rf.me, rf.currentTerm, args.LeaderId, args.Term, reply.Success)
 
 	rf.persist()
 	if args.LeaderCommit > rf.commitIndex {
@@ -771,8 +793,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 
 	
 	if !rf.peers[server].Call("Raft.AppendEntries", args, reply) {
-		Debug(dDrop, "S%d -> S%d is fail.\n", rf.me, server);
-		
 		return
 	}
 	
@@ -791,11 +811,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 		return
 	}
 
-	if len(args.Entries) > 0 {
-		Debug(dLog, "S%d(T:%d)(leader) send [%v] to S%d\n", rf.me, rf.currentTerm, args.Entries, server)
-	}
-	rf.logapi.logDebug(rf.me)
-
 	if reply.Success {
 		rf.matchIndex[server] = Max(args.PrevLogIndex+len(args.Entries), rf.matchIndex[server])
 		rf.nextIndex[server] = Max(rf.matchIndex[server]+1, rf.nextIndex[server])
@@ -807,8 +822,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 		} else {
 			rf.nextIndex[server] = Min(tmpInd + 1, rf.logapi.tailIndex() + 1)
 		}
-		// Debug(dTest, "S%d [%d] signal\n", rf.me, server)
-		// rf.replicatorCond[server].Signal()
 	}
 }
 
@@ -845,10 +858,14 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 			Data:	command,
 		}
 		rf.logapi.log = append(rf.logapi.log, newLogEntry)
+
+		// Debug(dTest, "S%d @Start, last(T:%d, ID:%d)\n", rf.me, rf.logapi.tail().Term, rf.logapi.tailIndex())
+		
 		rf.needPersist = true
-		Debug(dLog, "S%d(T:%d)(leader) start(%v)\n", rf.me, rf.currentTerm, newLogEntry.Data)
 		rf.broadcastEntries(false)
 	}
+	
+
 	rf.mu.Unlock()
 	
 	return index, term, isLeader
@@ -933,11 +950,10 @@ func (rf *Raft) replicator(peer int) {
 	defer rf.replicatorCond[peer].L.Unlock()
 	for rf.killed() == false {
 		for !rf.needAppend(peer) {
-			Debug(dTest, "S%d [%d] wait\n", rf.me, peer)
 			rf.replicatorCond[peer].Wait()
 		}
 		
-		Debug(dTimer, "S%d replicateEntries to S%d at replicator\n", rf.me, peer)
+		// Debug(dTimer, "S%d replicateEntries to S%d at replicator\n", rf.me, peer)
 		rf.replicateEntries(peer)
 	}
 }
@@ -969,20 +985,17 @@ func (rf *Raft) replicateEntries(peer int) {
 	}
 }
 func (rf *Raft) broadcastEntries(isHeartBeat bool) {
-	// TODO: 现在要解决的问题就是 "幽灵复现" 的问题？ 研究好 test-1.err 中的 FAIL: TestCount2B
-	Debug(dTimer, "S%d(state:%d) broadcastEntries(%v). timer(100)\n", rf.me, rf.state, isHeartBeat)
-	rf.timerReset(true)
-	// rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
+	Debug(dTimer, "S%d(T:%d)(state = %d) broadcast entries. reset timer(%d)\n", rf.me, rf.currentTerm, rf.state, append_entries_timeout)
+	rf.timerReset(append_entries_timeout)
 	
 	for i := 0; i < len(rf.peers); i++ {
 		if i == rf.me {
 			continue
 		}
 		if isHeartBeat {
-			Debug(dTimer, "S%d replicateEntries to S%d at heartbeat\n", rf.me, i)
+			// Debug(dTimer, "S%d replicateEntries to S%d at heartbeat\n", rf.me, i)
 			go rf.replicateEntries(i)
 		} else {
-			Debug(dTest, "S%d [%d] signal\n", rf.me, i)
 			rf.replicatorCond[i].Signal()
 		}
 	}
@@ -992,7 +1005,6 @@ func (rf *Raft) test_timer() {
 	test_timer := time.NewTimer(100 * time.Millisecond)
 	for rf.killed() == false {
 		<- test_timer.C
-		Debug(dInfo, "S%d: test timer.\n", rf.me)
 		test_timer.Reset(100 * time.Millisecond)
 	}
 }
@@ -1010,7 +1022,7 @@ func (rf *Raft) test_timer() {
 func Make(peers []*labrpc.ClientEnd, me int,
 	persister *Persister, applyCh chan ApplyMsg) *Raft {
 	
-	// TODO: 1. 修改定时器(必做); 2. 加入 no-op 功能
+	// TODO: 1. 修改定时器(必做)(已完成 80%); 2. 加入 no-op 功能
 	DebugInit()
 	rand.Seed(makeSeed())
 
@@ -1050,6 +1062,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.readPersist(persister.ReadRaftState())
 
 	rf.commitIndex, rf.lastApplied = rf.snapShotIndex, rf.snapShotIndex
+
+	Debug(dPersist, "S%d restart. T:%d, len(log):%d\n", rf.me, rf.currentTerm, rf.logapi.tailIndex() + 1)
 	
 	for i, nextInd := 0, rf.logapi.tailIndex() + 1; i < len(rf.peers); i++ {
 		rf.matchIndex[i], rf.nextIndex[i] = 0, nextInd
