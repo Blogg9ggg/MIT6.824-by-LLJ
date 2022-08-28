@@ -18,11 +18,8 @@ const (
 	candidate 				int = 1
 	follower 				int = 2
 
-	election_timeout		int32 = 150	// 150 - 300
+	election_timeout		int32 = 200	// 200 - 300
 	append_entries_timeout	int32 = 100
-
-	// election_timeout		int32 = 100
-	// append_entries_timeout	int32 = 70
 )
 
 // for apply
@@ -43,16 +40,109 @@ type LogEntry struct {
 	Term 	int
 	Data	interface{}
 }
-type logAPI struct {
+type log_api struct {
 	log				[]LogEntry
-	// headIndex == rf.snapShotIndex
-	headIndex	int
+	// head_ind == rf.snapShotIndex
+	head_ind	int
+	log_len		int
+	rwmu		sync.RWMutex
 }
-func (la *logAPI) logDebug(peer int) {
-	// DPrintf("LOG #%d: log(%v), headIndex(%d)\n", peer, la.log, la.headIndex)
+func (la *log_api) init() {
+	// la.rwmu.Lock()
+	// defer la.rwmu.Unlock()
+	la.log = make([]LogEntry, 1)
+	la.head_ind = 0
+	la.log_len = 1
 }
-func (la *logAPI) findFirst(term int) int {
-	l, r := la.headIndex, la.tailIndex()
+func (la *log_api) init_log(log []LogEntry, head_ind int) {
+	// la.rwmu.Lock()
+	// defer la.rwmu.Unlock()
+	la.log = log
+	la.log_len = len(log)
+	la.head_ind = head_ind
+}
+func (la *log_api) at(ind int) LogEntry {
+	// la.rwmu.RLock()
+	// defer la.rwmu.RUnlock()
+	if ind < la.head_ind {
+		panic("log_api.at(error): too old log.")
+	}
+	if ind - la.head_ind >= la.log_len {
+		panic("log_api.at(error): there isn't this log.")
+	}
+	return la.log[ind - la.head_ind]
+}
+func (la *log_api) index(ind int) int {
+	// la.rwmu.RLock()
+	// defer la.rwmu.RUnlock()
+	if ind < la.head_ind {
+		panic("log_api.index(error): too old log.")
+	}
+	// if ind - la.head_ind >= la.log_len {
+	// 	panic("log_api.index(error): there isn't this log.")
+	// }
+	return ind - la.head_ind
+}
+func (la *log_api) last_index() int {
+	// la.rwmu.RLock()
+	// defer la.rwmu.RUnlock()
+	return la.head_ind + la.log_len - 1
+}
+func (la *log_api) last_term() int {
+	// la.rwmu.RLock()
+	// defer la.rwmu.RUnlock()
+	return la.log[la.log_len-1].Term
+}
+func (la *log_api) push_back(entry LogEntry) {
+	// la.rwmu.Lock()
+	// defer la.rwmu.Unlock()
+	if la.log_len < len(la.log) {
+		la.log[la.log_len] = entry
+	} else {
+		la.log = append(la.log, entry)
+	}
+	la.log_len++;
+}
+func (la *log_api) real_log() []LogEntry {
+	// la.rwmu.RLock()
+	// defer la.rwmu.RUnlock()
+	ret := make([]LogEntry, la.log_len)
+	for i := 0; i < la.log_len; i++ {
+		ret[i] = la.log[i]
+	}
+	return ret
+}
+func (la *log_api) merge(start int, entries []LogEntry) {
+	tmp_s := la.index(start)
+	// la.rwmu.Lock()
+	// defer la.rwmu.Unlock()
+	if tmp_s > la.log_len {
+		panic("log_api.merge(error): too new log.")
+	}
+
+	change_flag := false
+	for i := 0; i < len(entries); i++ {
+		if tmp_s + i >= la.log_len {
+			la.push_back(entries[i])
+			change_flag = true
+		} else if la.log[tmp_s + i] != entries[i] {
+			la.log[tmp_s + i] = entries[i]
+			change_flag = true
+		}
+	}
+
+	if change_flag {
+		la.log_len = tmp_s + len(entries)
+	}
+	
+}
+func (la *log_api) logDebug(peer int) {
+	
+}
+func (la *log_api) findFirst(term int) int {
+	// la.rwmu.RLock()
+	// defer la.rwmu.RUnlock()
+	l, r := la.head_ind, la.last_index()
 	for l < r {
 		m := (l + r) / 2
 		if la.at(m).Term > term {
@@ -68,8 +158,10 @@ func (la *logAPI) findFirst(term int) int {
 	}
 	return -1
 }
-func (la *logAPI) findLast(term int) int {
-	l, r, ret := la.headIndex, la.tailIndex(), -1
+func (la *log_api) findLast(term int) int {
+	// la.rwmu.RLock()
+	// defer la.rwmu.RUnlock()
+	l, r, ret := la.head_ind, la.last_index(), -1
 	for l < r {
 		m := (l + r) / 2
 		if la.at(m).Term > term {
@@ -82,54 +174,55 @@ func (la *logAPI) findLast(term int) int {
 	}
 	return ret
 }
-func (la *logAPI) at(ind int) LogEntry {
-	if ind < la.headIndex {
-		panic("logAPI.at(error): too old log.")
+
+func (la *log_api) logCompress(ind int) {
+	// la.rwmu.Lock()
+	// defer la.rwmu.Unlock()
+	if ind < la.head_ind {
+		panic("log_api.logCompress(error): too old compress.")
 	}
-	return la.log[ind - la.headIndex]
-}
-func (la *logAPI) index(ind int) int {
-	if ind < la.headIndex {
-		panic("logAPI.at(error): too old log.")
+	if ind - la.head_ind >= la.log_len {
+		panic("log_api.logCompress(error): there isn't this ind.")
 	}
-	return ind - la.headIndex
-}
-func (la *logAPI) tailIndex() int {
-	return la.headIndex + len(la.log) - 1
-}
-func (la *logAPI) tail() LogEntry {
-	return la.log[len(la.log)-1]
-}
-func (la *logAPI) shrinkLogsArray() {
-	const lenMultiple = 2
-	if len(la.log) == 0 {
-		la.log = nil
-	} else if len(la.log)*lenMultiple < cap(la.log) {
-		newLogs := make([]LogEntry, len(la.log))
-		copy(newLogs, la.log)
-		la.log = newLogs
-	}
-}
-func (la *logAPI) cutLogsArray(ind int) {
-	// la.log[la.index(ind + 1)] = LogEntry{}
-	// la.log = la.log[:la.index(ind + 1)]
-	la.log = append([]LogEntry{}, la.log[:la.index(ind + 1)]...)
-}
-func (la *logAPI) logCompression(ind int) {
+
+	la.log_len -= (ind - la.head_ind)
 	la.log = append([]LogEntry{}, la.log[la.index(ind):]...)
 	la.log[0].Data = nil
-	la.headIndex = ind
-	la.shrinkLogsArray()
+	la.head_ind = ind
 }
-func (la *logAPI) installSnapshot(lastIncludedTerm int, lastIncludedIndex int) {
-	if lastIncludedIndex <= la.tailIndex() && 
+
+func (la *log_api) installSnapshot(lastIncludedTerm int, lastIncludedIndex int) {
+	if lastIncludedIndex <= la.last_index() && 
 	lastIncludedTerm == la.at(lastIncludedIndex).Term {
-		la.logCompression(lastIncludedIndex)
+		la.logCompress(lastIncludedIndex)
 	} else {
 		la.log = make([]LogEntry, 1)
-		la.log[0].Term, la.headIndex = lastIncludedTerm, lastIncludedIndex
-		la.shrinkLogsArray()
+		la.log[0].Term, la.head_ind = lastIncludedTerm, lastIncludedIndex
+		la.log_len = 1
 	}
+}
+func (la *log_api) shrinkLogsArray() {
+	// 弃用
+	// const lenMultiple = 2
+	// if len(la.log) == 0 {
+	// 	la.log = nil
+	// } else if len(la.log)*lenMultiple < cap(la.log) {
+	// 	newLogs := make([]LogEntry, len(la.log))
+	// 	copy(newLogs, la.log)
+	// 	la.log = newLogs
+	// }
+}
+func (la *log_api) cutLog(ind int) {	// log[:ind]
+	// 弃用
+	// la.rwmu.Lock()
+	// defer la.rwmu.Unlock()
+	// if ind < la.head_ind {
+	// 	panic("log_api.cutLog(error): too old cut.")
+	// }
+	// if ind - la.head_ind >= la.log_len {
+	// 	panic("log_api.cutLog(error): there isn't this log.")
+	// }
+	// la.log_len = ind - la.head_ind
 }
 
 type Raft struct {
@@ -140,7 +233,7 @@ type Raft struct {
 	dead      int32               // set by Kill()
 
 	currentTerm	int
-	logapi		logAPI
+	logapi		log_api
 	state 		int 	// 0, leader; 1, candidate; 2, follower
 	
 	timer				*time.Timer
@@ -181,6 +274,7 @@ func (rf *Raft) applier() {
 			rf.applyCond.Wait()
 		}
 		rf.lastApplied++
+		Debug(dCommit, "S%d last_index = %d, commitIndex = %d, lastApplied = %d\n", rf.me, rf.logapi.last_index(), rf.commitIndex, rf.lastApplied)
 		tmpApplyMsg := ApplyMsg{
 			CommandValid: 	true,
 			Command:		rf.logapi.at(rf.lastApplied).Data,
@@ -218,12 +312,9 @@ func (rf *Raft) updateCommitIndex(newComInd int) {
 			}
 			return false
 		}
-		l, r := Max(rf.commitIndex + 1, rf.snapShotIndex + 1), rf.logapi.tailIndex()
+		l, r := Max(rf.commitIndex + 1, rf.snapShotIndex + 1), rf.logapi.last_index()
 		for l <= r {
 			m := (l + r) / 2
-			// if rf.logapi.at(m).Term < rf.currentTerm {
-			// 	l = m + 1
-			// } else 
 			if !check(m) {
 				r = m - 1
 			} else {
@@ -231,7 +322,6 @@ func (rf *Raft) updateCommitIndex(newComInd int) {
 				l = m + 1
 			}
 		}
-		// DPrintf("SERVER #%d(T:%d): (matchIndex = %v), (commitIndex = %d), (log_len = %d)\n", rf.me, rf.currentTerm, rf.matchIndex, rf.commitIndex, len(rf.logapi.log))
 	}
 
 	rf.applyCond.Signal()
@@ -246,15 +336,9 @@ func (rf *Raft) timerReset(timeout int32) {
 	}
 
 	rf.timer.Reset(time.Duration(timeout) * time.Millisecond)
-
-	// if eTimeout {
-	// 	rf.timer.Reset(time.Duration(election_timeout + rand.Int31() % 151) * time.Millisecond)
-	// } else {
-	// 	rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
-	// }
 }
 func genETimeout() int32 {
-	return election_timeout + rand.Int31() % 151
+	return election_timeout + rand.Int31() % 100
 }
 
 // change state (before the function)
@@ -262,7 +346,7 @@ func genETimeout() int32 {
 func (rf *Raft) turn2Follower(vot int, cur int, resetTimer bool) {
 	if resetTimer {
 		Detmp := genETimeout()
-		Debug(dTimer, "S%d(T:%d) turn to follower. timer(%d)\n", rf.me, rf.currentTerm, Detmp)
+		// Debug(dTimer, "S%d(T:%d) turn to follower. timer(%d)\n", rf.me, rf.currentTerm, Detmp)
 		rf.timerReset(Detmp)
 	}
 
@@ -283,16 +367,11 @@ func (rf *Raft) turn2Follower(vot int, cur int, resetTimer bool) {
 func (rf *Raft) turn2Candidate() {
 	rf.state = candidate
 	// Increment currentTerm
-	rf.currentTerm ++
+	rf.currentTerm++
 	// Vote for self
 	rf.yes_vote = 1
 	rf.votedFor = rf.me
 	rf.needPersist = true
-
-	// Reset election timer
-	Detmp := genETimeout()
-	Debug(dTimer, "S%d(T:%d) turn to candidate. timer(%d)\n", rf.me, rf.currentTerm, Detmp)
-	rf.timerReset(Detmp)
 
 	for i := 0; i < len(rf.peers); i++ {
 		if i != rf.me {
@@ -301,8 +380,8 @@ func (rf *Raft) turn2Candidate() {
 				args := RequestVoteArgs{
 					Term: 			rf.currentTerm,
 					CandidateId: 	rf.me,
-					LastLogIndex:	rf.logapi.tailIndex(),
-					LastLogTerm:	rf.logapi.tail().Term,
+					LastLogIndex:	rf.logapi.last_index(),
+					LastLogTerm:	rf.logapi.last_term(),
 				}
 				reply := RequestVoteReply{}
 				
@@ -311,20 +390,25 @@ func (rf *Raft) turn2Candidate() {
 			}(i)
 		}
 	}
+
+	// Reset election timer
+	Detmp := genETimeout()
+	// Debug(dTimer, "S%d(T:%d) turn to candidate. timer(%d)\n", rf.me, rf.currentTerm, Detmp)
+	rf.timerReset(Detmp)
 }
 
 func (rf *Raft) turn2Leader() {
 	Debug(dLeader, "S%d(T:%d) turn to leader\n", rf.me, rf.currentTerm)
 	// Debug(dVote, "S%d(T:%d) get %d votes, become leader.\n", rf.me, rf.currentTerm, rf.yes_vote)
 	rf.state = leader
-	nextIndex_ := rf.logapi.tailIndex() + 1
+	nextIndex_ := rf.logapi.last_index() + 1
 	for i := 0; i < len(rf.peers); i++ {
 		rf.nextIndex[i] = nextIndex_
 		rf.matchIndex[i] = 0
 	}
 
-	// rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
 	rf.broadcastEntries(true)
+	rf.timerReset(append_entries_timeout)
 }
 
 
@@ -346,7 +430,7 @@ func (rf *Raft) encodeState() []byte {
 	buf := new(bytes.Buffer)
 	enc := labgob.NewEncoder(buf)
 	enc.Encode(rf.currentTerm)
-	enc.Encode(rf.logapi.log)
+	enc.Encode(rf.logapi.real_log())
 	enc.Encode(rf.votedFor)
 	enc.Encode(rf.snapShotIndex)
 	enc.Encode(rf.snapShotTerm)
@@ -383,9 +467,9 @@ func (rf *Raft) readPersist(data []byte) {
 		dec.Decode(&snapShotTerm_) != nil {
 	// SOMETHING ERROR
 	} else {
-		rf.currentTerm, rf.logapi.log, rf.votedFor, rf.snapShotIndex, rf.snapShotTerm = 
-			currentTerm_, log_, votedFor_, snapShotIndex_, snapShotTerm_
-		rf.logapi.headIndex = rf.snapShotIndex
+		rf.currentTerm, rf.votedFor, rf.snapShotIndex, rf.snapShotTerm = 
+			currentTerm_, votedFor_, snapShotIndex_, snapShotTerm_
+		rf.logapi.init_log(log_, rf.snapShotIndex)
 		rf.needPersist = true
 	}
 }
@@ -406,16 +490,16 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 	// 
 	rf.mu.Lock()
 	if args.Term > rf.currentTerm {
-		rf.turn2Follower(-1, args.Term, true)
+		rf.turn2Follower(-1, args.Term, true)	// 争议
 	} else {// args.Term == rf.currentTerm
 		switch rf.state {
 		case leader:
 			// Election Safety 性质保证 args.Term != rf.currentTerm
 			// 故流程不应该走到这里
 		case candidate:
-			rf.turn2Follower(rf.me, args.Term, true)
+			rf.turn2Follower(rf.me, args.Term, true)	// 争议
 		case follower:
-			rf.timerReset(genETimeout())
+			rf.timerReset(genETimeout())	// 争议
 		}
 	}
 
@@ -454,7 +538,7 @@ func (rf *Raft) sendInstallSnapshot(server int, args *InstallSnapshotArgs, reply
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 	if reply.Term > rf.currentTerm {
-		rf.turn2Follower(-1, reply.Term, true)
+		rf.turn2Follower(-1, reply.Term, false)	// 争议
 		return
 	}
 
@@ -509,7 +593,7 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 	}
 
 	rf.snapShotTerm, rf.snapShotIndex = rf.logapi.at(index).Term, index
-	rf.logapi.logCompression(rf.snapShotIndex)
+	rf.logapi.logCompress(rf.snapShotIndex)
 
 	rf.persister.SaveStateAndSnapshot(rf.encodeState(), snapshot)
 }
@@ -519,13 +603,13 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 
 // check if sender's log is up-to-date ?
 func (rf *Raft) isUpToDate(lastLogIndex int, lastLogTerm int) (bool) {
-	rfLastTerm := rf.logapi.tail().Term
+	rfLastTerm := rf.logapi.last_term()
 	if lastLogTerm > rfLastTerm {
 		return true
 	}
 
 	if lastLogTerm == rfLastTerm && 
-	lastLogIndex >= rf.logapi.tailIndex() {
+	lastLogIndex >= rf.logapi.last_index() {
 		return true
 	}
 
@@ -533,19 +617,20 @@ func (rf *Raft) isUpToDate(lastLogIndex int, lastLogTerm int) (bool) {
 }
 
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
-	if rf.killed() {
-		reply.Term = -1
-		reply.VoteGranted = false
-		return
-	}
+	// if rf.killed() {
+	// 	reply.Term = -1
+	// 	reply.VoteGranted = false
+	// 	return
+	// }
 	
 	// Reply false if term < currentTerm (&5.1)
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 
-	Debug(dVote, "S%d(T:%d)(lastT:%d, lastID:%d) is asked vote by S%d(T:%d)(lastT:%d, lastID:%d)\n", 
-		rf.me, rf.currentTerm, rf.logapi.tail().Term, rf.logapi.tailIndex(), 
-		args.CandidateId, args.Term, args.LastLogTerm, args.LastLogIndex)
+	Debug(dVote, "S%d(T:%d)(lastT:%d, lastID:%d) is asked vote by S%d(T:%d)(lastT:%d, lastID:%d)\nS%d's log:%v\n", 
+		rf.me, rf.currentTerm, rf.logapi.last_term(), rf.logapi.last_index(), 
+		args.CandidateId, args.Term, args.LastLogTerm, args.LastLogIndex,
+		rf.me, rf.logapi.real_log())
 
 	if args.Term < rf.currentTerm {
 		reply.Term = rf.currentTerm
@@ -569,7 +654,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.turn2Follower(args.CandidateId, args.Term, true)
 			} else {
 				reply.VoteGranted = false
-				rf.turn2Follower(-1, args.Term, true)	// 争议
+				rf.turn2Follower(-1, args.Term, false)	// 争议
 			}
 		} else {
 			reply.Term = rf.currentTerm
@@ -583,7 +668,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.turn2Follower(args.CandidateId, args.Term, true)
 			} else {
 				reply.VoteGranted = false
-				rf.turn2Follower(-1, args.Term, true)	// 争议
+				rf.turn2Follower(-1, args.Term, false)	// 争议
 			}
 		} else {
 			reply.Term = rf.currentTerm
@@ -597,7 +682,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.turn2Follower(args.CandidateId, args.Term, true)
 			} else {
 				reply.VoteGranted = false
-				rf.turn2Follower(-1, args.Term, true)	// 争议
+				rf.turn2Follower(-1, args.Term, false)	// 争议
 			}
 		} else if args.Term == rf.currentTerm {
 			reply.Term = args.Term
@@ -605,9 +690,9 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.votedFor = args.CandidateId
 				rf.needPersist = true
 				reply.VoteGranted = true
-				// Debug(dTimer, "S%d request vote. timer(150-300)\n", rf.me)
+				
 				Detmp := genETimeout()
-				Debug(dTimer, "S%d(T:%d)(follower) reset timer(%d)\n", rf.me, rf.currentTerm, Detmp)
+				// Debug(dTimer, "S%d(T:%d)(follower) reset timer(%d)\n", rf.me, rf.currentTerm, Detmp)
 				rf.timerReset(Detmp)
 			} else {
 				reply.VoteGranted = false
@@ -641,31 +726,28 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	rf.mu.Unlock()
 
 	if !rf.peers[server].Call("Raft.RequestVote", args, reply) {
-		// 内置重试
-		reply = &RequestVoteReply{}
-		go rf.sendRequestVote(server, args, reply)
+		// reply = &RequestVoteReply{}
+		// go rf.sendRequestVote(server, args, reply)
 		return
 	}
-	
-	Debug(dVote, "S%d(T:%d) voted by S%d(T:%d)? %v.\n", rf.me, rf.currentTerm, server, reply.Term, reply.VoteGranted)
-
 	
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 
 	if reply.Term > rf.currentTerm {// reply.Success must be false
-		rf.turn2Follower(-1, reply.Term, true)
+		rf.turn2Follower(-1, reply.Term, false)
 		return
 	}
 
+	Debug(dVote, "S%d(T:%d, AT:%d, S:%d) voted by S%d(T:%d)? %v.\n", rf.me, rf.currentTerm, args.Term, rf.state, server, reply.Term, reply.VoteGranted)
 	// rpc 返回后, 修改状态之前, 必须检查 currentTerm 和 state
 	if args.Term == rf.currentTerm && 
 	rf.state == candidate && 
 	reply.VoteGranted {
 		rf.yes_vote++
+		Debug(dVote, "S%d's yes_vote = %d\n", rf.me, rf.yes_vote)
 		if rf.yes_vote > len(rf.peers)/2 {
 			rf.turn2Leader()
-			return
 		}
 	} 
 }
@@ -679,15 +761,15 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	defer rf.mu.Unlock()
 	
 	if len(args.Entries) > 0 {
-		Debug(dLog2, "S%d(T:%d, state = %d, follower?) recv entries(last_one(T:%d)) from S%d(T:%d)\n", 
-			rf.me, rf.currentTerm, rf.state, args.Entries[len(args.Entries)-1].Term, args.LeaderId, args.Term)
+		// Debug(dLog2, "S%d(T:%d, state = %d, follower?) recv entries(last_one(T:%d)) from S%d(T:%d)\n", 
+		// 	rf.me, rf.currentTerm, rf.state, args.Entries[len(args.Entries)-1].Term, args.LeaderId, args.Term)
 	}
 
 	reply.Success = false
 	reply.Term = rf.currentTerm
 
 	if args.Term < rf.currentTerm {
-		Debug(dClient, "AppendEntries: S%d newer than fake leader S%d\n", rf.me, args.LeaderId)
+		// Debug(dClient, "AppendEntries: S%d newer than fake leader S%d\n", rf.me, args.LeaderId)
 		rf.persist()
 		return
 	}
@@ -716,7 +798,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			rf.needPersist = true
 		}
 		Detmp := genETimeout()
-		Debug(dTimer, "S%d(T:%d)(follower) reset timer(%d)\n", rf.me, rf.currentTerm, Detmp)
+		// Debug(dTimer, "S%d(T:%d)(follower) reset timer(%d)\n", rf.me, rf.currentTerm, Detmp)
 		rf.timerReset(Detmp)
 	}
 
@@ -724,52 +806,58 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	// 复制日志
 	// 
 	// 利用 ConflictTerm, ConflictIndex 这 2 个字段做 accelerated log backtracking optimization
-	if rf.logapi.headIndex > args.PrevLogIndex ||
-		args.PrevLogIndex > rf.logapi.tailIndex() {
+	if rf.logapi.head_ind > args.PrevLogIndex ||
+		args.PrevLogIndex > rf.logapi.last_index() {
 		
 		reply.Success = false
 		reply.ConflictTerm = -1
-		reply.ConflictIndex = rf.logapi.tailIndex() + 1
+		reply.ConflictIndex = rf.logapi.last_index() + 1
 	} else if rf.logapi.at(args.PrevLogIndex).Term != args.PrevLogTerm {
 		reply.Success = false
 		reply.ConflictTerm = rf.logapi.at(args.PrevLogIndex).Term
 		reply.ConflictIndex = rf.logapi.findFirst(reply.ConflictTerm)
 	} else {
 		reply.Success = true
-		needCut := false
-		for i := 0; i < len(args.Entries); i++ {
-			if args.PrevLogIndex + 1 + i <= rf.logapi.tailIndex() {
-				tmpInd := rf.logapi.index(args.PrevLogIndex+1+i)
-				if rf.logapi.log[tmpInd] != args.Entries[i] {
-					rf.logapi.log[tmpInd] = args.Entries[i]
-					needCut = true
-				}
-			} else {
-				rf.logapi.log = append(rf.logapi.log, args.Entries[i])
-				needCut = false
-			}
-		}
-		// 一定要把后面多余的日志删掉！
-		if args.PrevLogIndex + len(args.Entries) < rf.logapi.tailIndex() && needCut {
-			rf.logapi.cutLogsArray(args.PrevLogIndex + len(args.Entries))
-		}
 
-		if len(args.Entries) > 0 &&
-		((rf.logapi.tailIndex() != args.PrevLogIndex + len(args.Entries) ||
-		rf.logapi.tail().Term != args.Entries[len(args.Entries) - 1].Term)) {
-			Debug(dError, "S%d @AppendEntries, last(T:%d, ID:%d), rf.log:%v, entries:%v\n", 
-			rf.me, rf.logapi.tail().Term, rf.logapi.tailIndex(), rf.logapi.log, args.Entries)
+		if len(args.Entries) > 0 {
+			rf.logapi.merge(args.PrevLogIndex + 1, args.Entries)
+			rf.needPersist = true
+			
+			Debug(dLog, "S%d(T:%d) merge(%v), new log is %v\n", rf.me, rf.currentTerm, args.Entries, rf.logapi.real_log())
 		}
 		
-		rf.needPersist = true
+		if len(args.Entries) > 0 &&
+		((rf.logapi.last_index() != args.PrevLogIndex + len(args.Entries) ||
+		rf.logapi.last_term() != args.Entries[len(args.Entries) - 1].Term)) {
+			Debug(dError, "S%d @AppendEntries, last(T:%d, ID:%d), rf.log:%v, entries:%v\n", 
+			rf.me, rf.logapi.last_term(), rf.logapi.last_index(), rf.logapi.real_log(), args.Entries)
+		}
+		
+		// needCut := false
+		// for i := 0; i < len(args.Entries); i++ {
+		// 	if args.PrevLogIndex + 1 + i <= rf.logapi.last_index() {
+		// 		tmpInd := rf.logapi.index(args.PrevLogIndex+1+i)
+		// 		if rf.logapi.log[tmpInd] != args.Entries[i] {
+		// 			rf.logapi.log[tmpInd] = args.Entries[i]
+		// 			needCut = true
+		// 		}
+		// 	} else {
+		// 		rf.logapi.log = append(rf.logapi.log, args.Entries[i])
+		// 		needCut = false
+		// 	}
+		// }
+		// // 一定要把后面多余的日志删掉！
+		// if args.PrevLogIndex + len(args.Entries) < rf.logapi.last_index() && needCut {
+		// 	rf.logapi.cutLog(args.PrevLogIndex + len(args.Entries) + 1)
+		// }
 	}
 
-	Debug(dLog2, "S%d(T:%d) from S%d(T:%d). result: %v)\n", 
-			rf.me, rf.currentTerm, args.LeaderId, args.Term, reply.Success)
+	// Debug(dLog2, "S%d(T:%d) from S%d(T:%d). result: %v)\n", 
+	// 		rf.me, rf.currentTerm, args.LeaderId, args.Term, reply.Success)
 
 	rf.persist()
 	if args.LeaderCommit > rf.commitIndex {
-		rf.updateCommitIndex(Min(args.LeaderCommit, rf.logapi.tailIndex()))
+		rf.updateCommitIndex(Min(args.LeaderCommit, rf.logapi.last_index()))
 		return
 	}
 }
@@ -791,7 +879,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	rf.persist()
 	rf.mu.Unlock()
 
-	
 	if !rf.peers[server].Call("Raft.AppendEntries", args, reply) {
 		return
 	}
@@ -801,7 +888,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 
 	if reply.Term > rf.currentTerm {
 		// reply.Success 一定是 false
-		rf.turn2Follower(-1, reply.Term, true)
+		rf.turn2Follower(-1, reply.Term, false)
 		return
 	}
 
@@ -818,37 +905,22 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	} else {
 		tmpInd := rf.logapi.findLast(reply.ConflictTerm)
 		if tmpInd == -1 {
-			rf.nextIndex[server] = Min(reply.ConflictIndex, rf.logapi.tailIndex() + 1)
+			rf.nextIndex[server] = Min(reply.ConflictIndex, rf.logapi.last_index() + 1)
 		} else {
-			rf.nextIndex[server] = Min(tmpInd + 1, rf.logapi.tailIndex() + 1)
+			rf.nextIndex[server] = Min(tmpInd + 1, rf.logapi.last_index() + 1)
 		}
 	}
 }
 
 
 
-
-//
-// the service using Raft (e.g. a k/v server) wants to start
-// agreement on the next command to be appended to Raft's log. if this
-// server isn't the leader, returns false. otherwise start the
-// agreement and return immediately. there is no guarantee that this
-// command will ever be committed to the Raft log, since the leader
-// may fail or lose an election. even if the Raft instance has been killed,
-// this function should return gracefully.
-//
-// the first return value is the index that the command will appear at
-// if it's ever committed. the second return value is the current
-// term. the third return value is true if this server believes it is
-// the leader.
-//
 func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	if rf.killed() {
 		return -1, -1, false
 	}
 	
 	rf.mu.Lock()
-	index := rf.logapi.tailIndex() + 1
+	index := rf.logapi.last_index() + 1
 	term := rf.currentTerm
 	isLeader := (rf.state == leader)
 
@@ -857,9 +929,8 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 			Term:	rf.currentTerm,
 			Data:	command,
 		}
-		rf.logapi.log = append(rf.logapi.log, newLogEntry)
-
-		// Debug(dTest, "S%d @Start, last(T:%d, ID:%d)\n", rf.me, rf.logapi.tail().Term, rf.logapi.tailIndex())
+		rf.logapi.push_back(newLogEntry)
+		Debug(dLog, "S%d(T:%d) push back(%v). new log: %v\n", rf.me, rf.currentTerm, newLogEntry, rf.logapi.real_log())
 		
 		rf.needPersist = true
 		rf.broadcastEntries(false)
@@ -927,6 +998,7 @@ func (rf *Raft) ticker() {
 			// rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
 			// DPrintf("#SERVER %d: heartbeat", rf.me)
 			rf.broadcastEntries(true)
+			rf.timerReset(append_entries_timeout)
 		case candidate:
 			rf.turn2Candidate()
 		case follower:
@@ -940,7 +1012,7 @@ func (rf *Raft) needAppend(peer int) bool {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 
-	if (rf.state == leader && rf.nextIndex[peer] <= rf.logapi.tailIndex()) {
+	if (rf.state == leader && rf.nextIndex[peer] <= rf.logapi.last_index()) {
 		return true
 	}
 	return false
@@ -953,7 +1025,6 @@ func (rf *Raft) replicator(peer int) {
 			rf.replicatorCond[peer].Wait()
 		}
 		
-		// Debug(dTimer, "S%d replicateEntries to S%d at replicator\n", rf.me, peer)
 		rf.replicateEntries(peer)
 	}
 }
@@ -972,11 +1043,11 @@ func (rf *Raft) replicateEntries(peer int) {
 	} else {
 		args := rf.genInitAppendEntriesArgs(peer)
 		reply := AppendEntriesReply{}
-		if rf.nextIndex[peer] <= rf.logapi.tailIndex() && 
-		rf.logapi.tail().Term == rf.currentTerm {
+		if rf.nextIndex[peer] <= rf.logapi.last_index() && 
+		rf.logapi.last_term() == rf.currentTerm {
 			args.PrevLogIndex = rf.nextIndex[peer] - 1
 			args.PrevLogTerm = rf.logapi.at(args.PrevLogIndex).Term
-			for j := rf.nextIndex[peer]; j <= rf.logapi.tailIndex(); j++ {
+			for j := rf.nextIndex[peer]; j <= rf.logapi.last_index(); j++ {
 				args.Entries = append(args.Entries, rf.logapi.at(j))
 			}
 		}
@@ -985,8 +1056,9 @@ func (rf *Raft) replicateEntries(peer int) {
 	}
 }
 func (rf *Raft) broadcastEntries(isHeartBeat bool) {
-	Debug(dTimer, "S%d(T:%d)(state = %d) broadcast entries. reset timer(%d)\n", rf.me, rf.currentTerm, rf.state, append_entries_timeout)
-	rf.timerReset(append_entries_timeout)
+	// Debug(dTimer, "S%d(T:%d)(state = %d) broadcast entries. reset timer(%d)\n", rf.me, rf.currentTerm, rf.state, append_entries_timeout)
+	
+	// rf.timerReset(append_entries_timeout)	// 争议
 	
 	for i := 0; i < len(rf.peers); i++ {
 		if i == rf.me {
@@ -1008,21 +1080,10 @@ func (rf *Raft) test_timer() {
 		test_timer.Reset(100 * time.Millisecond)
 	}
 }
-//
-// the service or tester wants to create a Raft server. the ports
-// of all the Raft servers (including this one) are in peers[]. this
-// server's port is peers[me]. all the servers' peers[] arrays
-// have the same order. persister is a place for this server to
-// save its persistent state, and also initially holds the most
-// recent saved state, if any. applyCh is a channel on which the
-// tester or service expects Raft to send ApplyMsg messages.
-// Make() must return quickly, so it should start goroutines
-// for any long-running work.
-//
+
 func Make(peers []*labrpc.ClientEnd, me int,
 	persister *Persister, applyCh chan ApplyMsg) *Raft {
-	
-	// TODO: 1. 修改定时器(必做)(已完成 80%); 2. 加入 no-op 功能
+
 	DebugInit()
 	rand.Seed(makeSeed())
 
@@ -1054,8 +1115,9 @@ func Make(peers []*labrpc.ClientEnd, me int,
 
 		needPersist: false,
 	}
-	rf.logapi = logAPI{}
-	rf.logapi.log = make([]LogEntry, 1)
+	rf.logapi = log_api{}
+	rf.logapi.init()
+
 	rf.applyCond = sync.NewCond(&rf.mu)
 	
 	// initialize from state persisted before a crash
@@ -1063,9 +1125,9 @@ func Make(peers []*labrpc.ClientEnd, me int,
 
 	rf.commitIndex, rf.lastApplied = rf.snapShotIndex, rf.snapShotIndex
 
-	Debug(dPersist, "S%d restart. T:%d, len(log):%d\n", rf.me, rf.currentTerm, rf.logapi.tailIndex() + 1)
+	// Debug(dPersist, "S%d restart. T:%d, len(log):%d\n", rf.me, rf.currentTerm, rf.logapi.last_index() + 1)
 	
-	for i, nextInd := 0, rf.logapi.tailIndex() + 1; i < len(rf.peers); i++ {
+	for i, nextInd := 0, rf.logapi.last_index() + 1; i < len(rf.peers); i++ {
 		rf.matchIndex[i], rf.nextIndex[i] = 0, nextInd
 		if i != rf.me {
 			rf.replicatorCond[i] = sync.NewCond(&sync.Mutex{})

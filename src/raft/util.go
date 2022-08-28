@@ -43,7 +43,7 @@ func getVerbosity() int {
 	return level
 }
 
-const debug = true
+const debug = false
 var debugStart time.Time
 var debugVerbosity int
 
