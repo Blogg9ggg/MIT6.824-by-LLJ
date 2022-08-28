@@ -10,5 +10,5 @@ mrtmp.*
 /main/mrcoordinator
 /main/mrsequential
 /main/mrworker
-*.log
-*.err
+/raft/log/*
+/kvraft/log/*
