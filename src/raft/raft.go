@@ -18,7 +18,7 @@ const (
 	candidate 				int = 1
 	follower 				int = 2
 
-	election_timeout		int32 = 200	// 200 - 300
+	election_timeout		int32 = 250	// 250 - 350
 	append_entries_timeout	int32 = 100
 )
 
@@ -45,25 +45,18 @@ type log_api struct {
 	// head_ind == rf.snapShotIndex
 	head_ind	int
 	log_len		int
-	rwmu		sync.RWMutex
 }
 func (la *log_api) init() {
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
 	la.log = make([]LogEntry, 1)
 	la.head_ind = 0
 	la.log_len = 1
 }
 func (la *log_api) init_log(log []LogEntry, head_ind int) {
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
 	la.log = log
 	la.log_len = len(log)
 	la.head_ind = head_ind
 }
 func (la *log_api) at(ind int) LogEntry {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	if ind < la.head_ind {
 		panic("log_api.at(error): too old log.")
 	}
@@ -73,8 +66,6 @@ func (la *log_api) at(ind int) LogEntry {
 	return la.log[ind - la.head_ind]
 }
 func (la *log_api) index(ind int) int {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	if ind < la.head_ind {
 		panic("log_api.index(error): too old log.")
 	}
@@ -84,18 +75,12 @@ func (la *log_api) index(ind int) int {
 	return ind - la.head_ind
 }
 func (la *log_api) last_index() int {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	return la.head_ind + la.log_len - 1
 }
 func (la *log_api) last_term() int {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	return la.log[la.log_len-1].Term
 }
 func (la *log_api) push_back(entry LogEntry) {
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
 	if la.log_len < len(la.log) {
 		la.log[la.log_len] = entry
 	} else {
@@ -104,8 +89,6 @@ func (la *log_api) push_back(entry LogEntry) {
 	la.log_len++;
 }
 func (la *log_api) real_log() []LogEntry {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	ret := make([]LogEntry, la.log_len)
 	for i := 0; i < la.log_len; i++ {
 		ret[i] = la.log[i]
@@ -114,8 +97,7 @@ func (la *log_api) real_log() []LogEntry {
 }
 func (la *log_api) merge(start int, entries []LogEntry) {
 	tmp_s := la.index(start)
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
+
 	if tmp_s > la.log_len {
 		panic("log_api.merge(error): too new log.")
 	}
@@ -134,14 +116,11 @@ func (la *log_api) merge(start int, entries []LogEntry) {
 	if change_flag {
 		la.log_len = tmp_s + len(entries)
 	}
-	
 }
 func (la *log_api) logDebug(peer int) {
 	
 }
 func (la *log_api) findFirst(term int) int {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	l, r := la.head_ind, la.last_index()
 	for l < r {
 		m := (l + r) / 2
@@ -159,8 +138,6 @@ func (la *log_api) findFirst(term int) int {
 	return -1
 }
 func (la *log_api) findLast(term int) int {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	l, r, ret := la.head_ind, la.last_index(), -1
 	for l < r {
 		m := (l + r) / 2
@@ -176,8 +153,6 @@ func (la *log_api) findLast(term int) int {
 }
 
 func (la *log_api) logCompress(ind int) {
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
 	if ind < la.head_ind {
 		panic("log_api.logCompress(error): too old compress.")
 	}
@@ -214,8 +189,6 @@ func (la *log_api) shrinkLogsArray() {
 }
 func (la *log_api) cutLog(ind int) {	// log[:ind]
 	// 弃用
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
 	// if ind < la.head_ind {
 	// 	panic("log_api.cutLog(error): too old cut.")
 	// }
@@ -281,7 +254,6 @@ func (rf *Raft) applier() {
 			CommandIndex:	rf.lastApplied,
 		}
 		// Debug(dCommit, "S%d(T:%d), apply(log[%d] = %v)\n", rf.me, rf.currentTerm, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
-		// DPrintf("SERVER #%d: apply(log[%d] = (%v))\n", rf.me, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
 		rf.mu.Unlock()
 		rf.applyChan <- tmpApplyMsg
 	}
@@ -482,13 +454,12 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		rf.mu.Unlock()
 		return
 	}
-	rf.mu.Unlock()
-	// 保证 args.Term >= rf.currentTerm
-
+	// rf.mu.Unlock()
 	// 
 	// 改变 state
+	// 保证 args.Term >= rf.currentTerm
 	// 
-	rf.mu.Lock()
+	// rf.mu.Lock()
 	if args.Term > rf.currentTerm {
 		rf.turn2Follower(-1, args.Term, true)	// 争议
 	} else {// args.Term == rf.currentTerm
@@ -697,7 +668,6 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 			} else {
 				reply.VoteGranted = false
 			}
-			
 		} else {
 			reply.Term = rf.currentTerm
 			// SOMETHING ERROR
@@ -996,7 +966,6 @@ func (rf *Raft) ticker() {
 		switch rf.state {
 		case leader:
 			// rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
-			// DPrintf("#SERVER %d: heartbeat", rf.me)
 			rf.broadcastEntries(true)
 			rf.timerReset(append_entries_timeout)
 		case candidate:
@@ -1030,7 +999,6 @@ func (rf *Raft) replicator(peer int) {
 }
 
 func (rf *Raft) replicateEntries(peer int) {
-	// DPrintf("replicateEntries(%d)\n", peer)
 	rf.mu.Lock()
 	if rf.nextIndex[peer] - 1 < rf.snapShotIndex {
 		args := rf.genInstallSnapshotArgs()
@@ -1074,6 +1042,7 @@ func (rf *Raft) broadcastEntries(isHeartBeat bool) {
 }
 
 func (rf *Raft) test_timer() {
+	// 无用
 	test_timer := time.NewTimer(100 * time.Millisecond)
 	for rf.killed() == false {
 		<- test_timer.C
