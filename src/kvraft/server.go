@@ -4,81 +4,13 @@ import (
 	"6.824/labgob"
 	"6.824/labrpc"
 	"6.824/raft"
-	"log"
 	"sync"
 	"sync/atomic"
 
 	"time"
 )
 
-const Debug = true
 
-func DPrintf(format string, a ...interface{}) (n int, err error) {
-	if Debug {
-		log.Printf(format, a...)
-	}
-	return
-}
-
-type StateMachine struct {
-	lastApplied	int
-	memory		map[string]string
-}
-
-const ExecuteTimeout = 500 * time.Millisecond
-
-func (kv *KVServer) applier() {
-	for {
-		msg := <- kv.applyCh
-
-		if msg.CommandValid {
-			// ???
-			command := msg.Command.(Op)
-			
-			switch command.Type {
-			case get_str:
-				kv.mu.Lock()
-				value, ok := kv.SM.memory[command.Key]
-				tmpCh := kv.notifyChs[kv.index2clientId[msg.CommandIndex]]
-				kv.mu.Unlock()
-				if ok {
-					tmpCh <- &Res {
-						Err: 	OK,
-						Value: 	value,
-					}
-				} else {
-					tmpCh <- &Res {
-						Err: 	ErrNoKey,
-						Value: 	"",
-					}
-				}
-			case put_str:
-				kv.mu.Lock()
-				kv.SM.memory[command.Key] = command.Value
-				tmpCh := kv.notifyChs[kv.index2clientId[msg.CommandIndex]]
-				kv.mu.Unlock()
-				tmpCh <- &Res {
-					Err: 	OK,
-				}
-			case append_str:
-				_, ok := kv.SM.memory[command.Key]
-				if !ok {
-					kv.SM.memory[command.Key] = command.Value	
-				} else {
-					kv.SM.memory[command.Key] += command.Value
-				}
-				kv.mu.Lock()
-				tmpCh := kv.notifyChs[kv.index2clientId[msg.CommandIndex]] 
-				kv.mu.Unlock()
-				tmpCh <- &Res {
-					Err: 	OK,
-				}
-			}
-		} else if msg.SnapshotValid {
-
-		}
-	}
-}
 
 type Op struct {
 	// Your definitions here.
@@ -87,17 +19,49 @@ type Op struct {
 	Type	string
 	Key		string
 	Value	string
+	ClientId 		int64
+	SequenceNum		int
 }
+
 type Res struct {
-	// 保存 state machine 执行结果
+	// 保存结果
 	Err   Err
 	Value string
 }
 
-// 
-// Raft 的一个优化想法: Start 加入 entry 的时候直接就调用 AppendEntry, 不要等下一次超时
+
+
+type StateMachine struct {
+	memory			map[string]string
+}
+
+func(vm *StateMachine) get(key string) (string, Err) {
+	value, ok := vm.memory[key]
+	if ok {
+		return value, OK
+	} else {
+		return "", ErrNoKey
+	}
+}
+
+func(vm *StateMachine) put(key string, value string) Err {
+	vm.memory[key] = value
+	return OK
+}
+
+func(vm *StateMachine) append(key string, value string) Err {
+	vm.memory[key] += value
+	return OK
+}
+
+func newStateMachine() *StateMachine {
+	return &StateMachine{make(map[string]string)}
+}
+
+
+
 type KVServer struct {
-	mu      sync.Mutex
+	mu      sync.RWMutex
 	me      int
 	rf      *raft.Raft
 	applyCh chan raft.ApplyMsg
@@ -107,22 +71,152 @@ type KVServer struct {
 
 	// Your definitions here.
 	SM			StateMachine
-	notifyChs 	map[int64]chan *Res
-	index2clientId	map[int]int64
+	notifyChs 	map[int]chan *Res
 
-	// 用于记录已经计算完成的 command 的结果
-	// 该记录主要是为了防止重复 apply, 故只用于 Put/Append 等只写命令, Get 是只读命令不用记录
-	// resultRes[cilentId][commandId] = <Err>
-	resultRec	map[int64]map[int] Err
+	// 用于记录已完成的写命令 (Put/Append) 的结果, 为了防止重复 apply.
+	lastWriteRes	map[int64]Err
+	lastWriteSN		map[int64]int
 }
 
-func (kv *KVServer) initNotiCh(clientId int64) {
-	if _, ok := kv.notifyChs[clientId]; !ok {
-		kv.notifyChs[clientId] = make(chan *Res)
+func (kv *KVServer) getNotifyCh(index int) chan *Res {
+	ret, ok := kv.notifyChs[index]
+	if !ok {
+		kv.notifyChs[index] = make(chan *Res)
+		ret = kv.notifyChs[index]
+	}
+
+	return ret
+}
+
+func (kv *KVServer) removeOldChan(index int) {
+	for k, ch := range kv.notifyChs {
+		if k < index {
+			Debug(dWarn, "server#%d remove(%d)\n", kv.me, k)
+			select {
+				case <-ch: // try to drain the channel
+				default:
+			}
+			delete(kv.notifyChs, k)
+		} else if k > index {
+			panic("removeOldChan(): index too small? something error\n")
+		} else if k == index {
+			// ?
+		}
 	}
 }
+
+func (kv *KVServer) applier() {
+	for {
+		msg := <- kv.applyCh
+		Debug(dInfo, "server#%d: applier get msg(CommandValid:%v, CommandIndex:%d, Command:%v)\n", 
+			kv.me, msg.CommandValid, msg.CommandValid, msg.Command.(Op))
+
+		if msg.CommandValid {
+			command := msg.Command.(Op)
+			res := &Res{
+				Err:	OK,
+			}
+
+			if command.Type == get_str {	// Get
+				kv.mu.RLock()
+				value, ok := kv.SM.memory[command.Key]
+				kv.mu.RUnlock()
+
+				if !ok {
+					res.Err = ErrNoKey
+				} else {
+					res.Value = value
+				}
+			} else {
+				kv.mu.RLock()
+				err, ok := kv.haveReplied(command.ClientId, command.SequenceNum)
+				kv.mu.RUnlock()
+
+				if ok {
+					res.Err = err
+				} else if command.Type == put_str {
+					kv.mu.Lock()
+					kv.SM.put(command.Key, command.Value)
+					kv.mu.Unlock()
+				} else if command.Type == append_str {
+					kv.mu.Lock()
+					kv.SM.append(command.Key, command.Value)
+					kv.mu.Unlock()
+				}
+			}
+			
+			currentTerm, isLeader := kv.rf.GetState()
+			if isLeader && msg.CommandTerm == currentTerm {
+				kv.mu.Lock()
+				ch := kv.getNotifyCh(msg.CommandIndex)
+				kv.mu.Unlock()
+				
+				Debug(dWarn, "server#%d: ch block?\n", kv.me)
+				select {
+				case ch <- res:
+				case <- time.After(ExecuteTimeout):
+				}
+				
+				Debug(dWarn, "server#%d: no.\n", kv.me)
+			}
+
+			// command := msg.Command.(Op)
+
+			// kv.mu.Lock()
+			// ch := kv.getNotifyCh(msg.CommandIndex)
+			// kv.mu.Unlock()
+
+			// if command.Type == get_str {	// Get
+			// 	kv.mu.RLock()
+			// 	value, ok := kv.SM.memory[command.Key]
+			// 	kv.mu.RUnlock()
+
+			// 	if ok {
+			// 		ch <- &Res {
+			// 			Err: 	OK,
+			// 			Value: 	value,
+			// 		}
+			// 	} else {
+			// 		ch <- &Res {
+			// 			Err: 	ErrNoKey,
+			// 			Value: 	"",
+			// 		}
+			// 	}Debug(dWarn, "ch block?\n")
+			// } else {	// Put/Append
+			// 	Debug(dCommit, "server#%d applier(type:%s, key:%s, val:%s, cID:%d, SN:%d)\n", 
+			// 		kv.me, command.Type, command.Key, command.Value, command.ClientId, command.SequenceNum)
+			// 	kv.mu.RLock()
+			// 	res, ok := kv.haveReplied(command.ClientId, command.SequenceNum)
+			// 	kv.mu.RUnlock()
+
+			// 	if ok {
+			// 		ch <- &Res { 
+			// 			Err: res, 
+			// 		}
+			// 		continue
+			// 	}
+
+			// 	kv.mu.Lock()
+			// 	if command.Type == put_str {
+			// 		kv.SM.put(command.Key, command.Value)
+			// 	} else {
+			// 		kv.SM.append(command.Key, command.Value)
+			// 	}
+			// 	kv.mu.Unlock()
+				
+			// 	
+			// 	ch <- &Res {
+			// 		Err: 	OK, 
+			// 	}
+			// 	Debug(dWarn, "no.\n")
+			// }
+		} else if msg.SnapshotValid {
+
+		}
+	}
+}
+
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
-	DPrintf("server(#%v).Get(%v)\n", kv.me, args)
 	command := Op {
 		Type:	get_str,
 		Key:	args.Key,
@@ -130,72 +224,86 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 
 	index, _, isLeader := kv.rf.Start(command)
 	if !isLeader {
-		reply.Err = ErrWrongLeader
+		reply.Status = ErrWrongLeader
 		return
 	}
 	kv.mu.Lock()
-	kv.initNotiCh(args.ClientId)
-	kv.index2clientId[index] = args.ClientId
+	// kv.removeOldChan(index)
+	ch := kv.getNotifyCh(index)
 	kv.mu.Unlock()
 
 	select {
-	case res := <- kv.notifyChs[args.ClientId]:
-		reply.Err = res.Err
-		reply.Value = res.Value
+	case res := <- ch:
+		reply.Status, reply.Value = res.Err, res.Value
 	case <- time.After(ExecuteTimeout):
-		reply.Err = ErrTimeOut
-		reply.Value = ""
+		reply.Status, reply.Value = ErrTimeOut, ""
 	}
 }
 
-func (kv *KVServer) haveReplied(clientId int64, commandId int) (bool, Err) {
-	kv.mu.Lock()
-	ret, ok := kv.resultRec[clientId][commandId]
-	kv.mu.Unlock()
-	if !ok {
-		return false, ""
+
+
+func (kv *KVServer) haveReplied(clientId int64, sequenceNum int) (Err, bool) {
+	SN, ok := kv.lastWriteSN[clientId]
+	if ok && SN >= sequenceNum {
+		return kv.lastWriteRes[clientId], true
 	}
-	return true, ret
+	
+	return "", false 
 }
+
+func (kv *KVServer) updateLastRecord(clientId int64, sequenceNum int, response Err) {
+	SN, ok := kv.lastWriteSN[clientId]
+	if !ok || SN < sequenceNum {
+		kv.lastWriteSN[clientId] = sequenceNum
+		kv.lastWriteRes[clientId] = response
+	}
+	
+}
+
 func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
-	DPrintf("server(#%v).PutAppend(%v)\n", kv.me, args)
-	if ok, res := kv.haveReplied(args.ClientId, args.CommandId); ok {
-		reply.Err = res
-		return
-	}
+	Debug(dLog, "server#%d, %s(key:%s,val:%s,CID:%d,SN:%d)\n", 
+		kv.me, args.Op, args.Key, args.Value, args.ClientId, args.SequenceNum)
 
-	if _, ok := kv.resultRec[args.ClientId]; !ok {
-		kv.resultRec[args.ClientId] = make(map[int] Err)
+	kv.mu.RLock()
+	res, ok := kv.haveReplied(args.ClientId, args.SequenceNum)
+	kv.mu.RUnlock()
+	if ok {
+		reply.Status = res
+		return
 	}
 
 	command := Op {
 		Type:	args.Op,
 		Key:	args.Key,
 		Value:	args.Value,
+		ClientId:	args.ClientId,
+		SequenceNum:args.SequenceNum,
 	}
+
 	index, _, isLeader := kv.rf.Start(command)
 	if !isLeader {
-		kv.resultRec[args.ClientId][args.CommandId] = ErrWrongLeader
-		reply.Err = ErrWrongLeader
-	
+		reply.Status = ErrWrongLeader
+		
 		return
 	}
+	Debug(dCommit, "server#%d Start(%v), index:%d\n", kv.me, command, index)
+
 	kv.mu.Lock()
-	kv.initNotiCh(args.ClientId)
-	kv.index2clientId[index] = args.ClientId
+	// kv.removeOldChan(index)
+	ch := kv.getNotifyCh(index)
 	kv.mu.Unlock()
 
 	select {
-	case res := <- kv.notifyChs[args.ClientId]:
-		reply.Err = res.Err
+	case res := <- ch:
+		reply.Status = res.Err
+		go func() {
+			kv.mu.Lock()
+			kv.updateLastRecord(args.ClientId, args.SequenceNum, reply.Status)
+			kv.mu.Unlock()
+		}()
 	case <- time.After(ExecuteTimeout):
-		reply.Err = ErrTimeOut
+		reply.Status = ErrTimeOut
 	}
-	go func() {
-		kv.mu.Lock()
-		kv.resultRec[args.ClientId][args.CommandId] = reply.Err
-		kv.mu.Unlock()
-	}()
 }
 
 //
@@ -236,6 +344,8 @@ func (kv *KVServer) killed() bool {
 func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister, maxraftstate int) *KVServer {
 	// call labgob.Register on structures you want
 	// Go's RPC library to marshall/unmarshall.
+	DebugInit()
+
 	labgob.Register(Op{})
 
 	kv := new(KVServer)
@@ -246,11 +356,12 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.rf = raft.Make(servers, me, persister, kv.applyCh)
 
 	// You may need initialization code here.
-	kv.SM.memory = make(map[string]string)
-	kv.notifyChs = make(map[int64]chan *Res)
-	kv.resultRec = make(map[int64]map[int] Err)
-	kv.index2clientId =	make(map[int]int64)
-	DPrintf("StartKVServer\n")
+	kv.SM = *newStateMachine()
+	kv.notifyChs = make(map[int]chan *Res)
+
+	// 从 1 开始
+	kv.lastWriteSN = make(map[int64]int)
+	kv.lastWriteRes = make(map[int64]Err)
 
 	go kv.applier()
 

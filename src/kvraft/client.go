@@ -3,6 +3,7 @@ package kvraft
 import "6.824/labrpc"
 import "crypto/rand"
 import "math/big"
+
 import "time"
 
 
@@ -10,7 +11,7 @@ type Clerk struct {
 	servers []*labrpc.ClientEnd
 	// You will have to modify this struct.
 	id			int64
-	comStamp	int
+	sequenceNum	int
 	leaderId	int
 }
 
@@ -29,9 +30,9 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	// You'll have to add code here.
 	
 	ck.id = nrand()
-	ck.comStamp = 0
+	ck.sequenceNum = 0
 	ck.leaderId = 0
-	DPrintf("MakeClerk: ck.id = %v\n", ck.id)
+	Debug(dClient, "MakeClient: id = %v\n", ck.id)
 
 	return ck
 }
@@ -49,32 +50,31 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) Get(key string) string {
-	DPrintf("client(%v).Get(%s)\n", ck.id, key)
-	// 一个 command 对应一个 comStamp, 故后面的重试全部使用这一个 CommandId
-	tmpComId := ck.comStamp
-	ck.comStamp++
+	// 一个 command 对应一个 sequenceNum, 故后面的重试全部使用这一个 SequenceNum
+	ck.sequenceNum++
 
 	args := GetArgs{
 		Key: 		key,
-		ClientId: 	ck.id,
-		CommandId:	tmpComId,
 	}
 	var reply GetReply
 
 	for {
+		if ck.leaderId == 0 {
+			time.Sleep(50 * time.Millisecond)
+		}
+		
 		reply = GetReply{}
 		if !ck.servers[ck.leaderId].Call("KVServer.Get", &args, &reply) {
+			ck.leaderId = (ck.leaderId + 1) % len(ck.servers)
 			continue
 		}
-		DPrintf("client(#%v).Get: reply = %v\n", ck.id, reply)
-		if reply.Err == OK {
+
+		if reply.Status == OK {
 			return reply.Value
-		} else if reply.Err == ErrNoKey {
+		} else if reply.Status == ErrNoKey {
 			return ""
-		} else if reply.Err == ErrWrongLeader {
+		} else if reply.Status == ErrWrongLeader {
 			ck.leaderId = (ck.leaderId + 1) % len(ck.servers)
-			
-			time.Sleep(100 * time.Millisecond)
 		}
 	}
 }
@@ -90,32 +90,36 @@ func (ck *Clerk) Get(key string) string {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) PutAppend(key string, value string, op string) {
-	DPrintf("client(#%v).PutAppend(%s,%s,%s)\n", ck.id, key, value, op)
-	// 一个 command 对应一个 comStamp, 故后面的重试全部使用这一个 CommandId
-	tmpComId := ck.comStamp
-	ck.comStamp++
+	// 一个 command 对应一个 sequenceNum, 故后面的重试全部使用这一个 SequenceNum
+	ck.sequenceNum++
 	
+	Debug(dClient, "client#%v %s(key: %s, value: %s, SN: %d)\n", ck.id, op, key, value, ck.sequenceNum)
 	args := PutAppendArgs {
 		Key: 		key,
 		Value:		value,
 		Op:			op,
+
 		ClientId: 	ck.id,
-		CommandId:	tmpComId,
+		SequenceNum:	ck.sequenceNum,
 	}
 	var reply PutAppendReply
 
 	for {
+		if ck.leaderId == 0 {
+			time.Sleep(50 * time.Millisecond)
+		}
+
 		reply = PutAppendReply{}
 		
 		if !ck.servers[ck.leaderId].Call("KVServer.PutAppend", &args, &reply) {
+			ck.leaderId = (ck.leaderId + 1) % len(ck.servers)
 			continue
 		}
-		DPrintf("client(#%v).PutAppend: reply = %v\n", ck.id, reply)
-		if reply.Err == OK {
+		Debug(dClient, "client#%v, SN:%d, leaderId:%d, reply:%v\n", ck.id, ck.sequenceNum, ck.leaderId, reply)
+		if reply.Status == OK {
 			break
-		} else if reply.Err == ErrWrongLeader {
+		} else if reply.Status == ErrWrongLeader || reply.Status == ErrTimeOut {
 			ck.leaderId = (ck.leaderId + 1) % len(ck.servers)
-			time.Sleep(100 * time.Millisecond)
 		}
 	}
 }
