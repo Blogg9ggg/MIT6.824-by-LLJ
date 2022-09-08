@@ -108,14 +108,20 @@ func (kv *KVServer) removeOldChan(index int) {
 func (kv *KVServer) applier() {
 	for {
 		msg := <- kv.applyCh
-		Debug(dInfo, "server#%d: applier get msg(CommandValid:%v, CommandIndex:%d, Command:%v)\n", 
-			kv.me, msg.CommandValid, msg.CommandValid, msg.Command.(Op))
-
+		
 		if msg.CommandValid {
 			command := msg.Command.(Op)
 			res := &Res{
 				Err:	OK,
 			}
+
+			// Type	string
+			// Key		string
+			// Value	string
+			// ClientId 		int64
+			// SequenceNum		int
+			Debug(dInfo, "server#%d: applier get msg(CommandValid:%v, CommandIndex:%d, CommandTerm:%d Command:{Type:%s, Key:%s, Val:%s, CId:%d, SN:%d})\n", 
+			kv.me, msg.CommandValid, msg.CommandIndex, msg.CommandTerm, command.Type, command.Key, command.Value, command.ClientId, command.SequenceNum)
 
 			if command.Type == get_str {	// Get
 				kv.mu.RLock()
@@ -129,7 +135,7 @@ func (kv *KVServer) applier() {
 				}
 			} else {
 				kv.mu.RLock()
-				err, ok := kv.haveReplied(command.ClientId, command.SequenceNum)
+				err, ok := kv.haveApplied(command.ClientId, command.SequenceNum)
 				kv.mu.RUnlock()
 
 				if ok {
@@ -137,15 +143,18 @@ func (kv *KVServer) applier() {
 				} else if command.Type == put_str {
 					kv.mu.Lock()
 					kv.SM.put(command.Key, command.Value)
+					kv.updateLastSN(command.ClientId, command.SequenceNum, OK)
 					kv.mu.Unlock()
 				} else if command.Type == append_str {
 					kv.mu.Lock()
 					kv.SM.append(command.Key, command.Value)
+					kv.updateLastSN(command.ClientId, command.SequenceNum, OK)
 					kv.mu.Unlock()
 				}
 			}
 			
 			currentTerm, isLeader := kv.rf.GetState()
+			Debug(dInfo, "server#%d: currentTerm = %d\n", kv.me, currentTerm)
 			if isLeader && msg.CommandTerm == currentTerm {
 				kv.mu.Lock()
 				ch := kv.getNotifyCh(msg.CommandIndex)
@@ -153,63 +162,12 @@ func (kv *KVServer) applier() {
 				
 				Debug(dWarn, "server#%d: ch block?\n", kv.me)
 				select {
-				case ch <- res:
-				case <- time.After(ExecuteTimeout):
+					case ch <- res:
+					case <- time.After(ExecuteTimeout):
 				}
 				
 				Debug(dWarn, "server#%d: no.\n", kv.me)
 			}
-
-			// command := msg.Command.(Op)
-
-			// kv.mu.Lock()
-			// ch := kv.getNotifyCh(msg.CommandIndex)
-			// kv.mu.Unlock()
-
-			// if command.Type == get_str {	// Get
-			// 	kv.mu.RLock()
-			// 	value, ok := kv.SM.memory[command.Key]
-			// 	kv.mu.RUnlock()
-
-			// 	if ok {
-			// 		ch <- &Res {
-			// 			Err: 	OK,
-			// 			Value: 	value,
-			// 		}
-			// 	} else {
-			// 		ch <- &Res {
-			// 			Err: 	ErrNoKey,
-			// 			Value: 	"",
-			// 		}
-			// 	}Debug(dWarn, "ch block?\n")
-			// } else {	// Put/Append
-			// 	Debug(dCommit, "server#%d applier(type:%s, key:%s, val:%s, cID:%d, SN:%d)\n", 
-			// 		kv.me, command.Type, command.Key, command.Value, command.ClientId, command.SequenceNum)
-			// 	kv.mu.RLock()
-			// 	res, ok := kv.haveReplied(command.ClientId, command.SequenceNum)
-			// 	kv.mu.RUnlock()
-
-			// 	if ok {
-			// 		ch <- &Res { 
-			// 			Err: res, 
-			// 		}
-			// 		continue
-			// 	}
-
-			// 	kv.mu.Lock()
-			// 	if command.Type == put_str {
-			// 		kv.SM.put(command.Key, command.Value)
-			// 	} else {
-			// 		kv.SM.append(command.Key, command.Value)
-			// 	}
-			// 	kv.mu.Unlock()
-				
-			// 	
-			// 	ch <- &Res {
-			// 		Err: 	OK, 
-			// 	}
-			// 	Debug(dWarn, "no.\n")
-			// }
 		} else if msg.SnapshotValid {
 
 		}
@@ -233,16 +191,20 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 	kv.mu.Unlock()
 
 	select {
-	case res := <- ch:
-		reply.Status, reply.Value = res.Err, res.Value
-	case <- time.After(ExecuteTimeout):
-		reply.Status, reply.Value = ErrTimeOut, ""
+		case res := <- ch:
+			reply.Status, reply.Value = res.Err, res.Value
+		case <- time.After(ExecuteTimeout):
+			reply.Status, reply.Value = ErrTimeOut, ""
 	}
+
+	// if kv.persister.RaftStateSize() > kv.maxraftstate {
+
+	// }
 }
 
 
 
-func (kv *KVServer) haveReplied(clientId int64, sequenceNum int) (Err, bool) {
+func (kv *KVServer) haveApplied(clientId int64, sequenceNum int) (Err, bool) {
 	SN, ok := kv.lastWriteSN[clientId]
 	if ok && SN >= sequenceNum {
 		return kv.lastWriteRes[clientId], true
@@ -251,7 +213,7 @@ func (kv *KVServer) haveReplied(clientId int64, sequenceNum int) (Err, bool) {
 	return "", false 
 }
 
-func (kv *KVServer) updateLastRecord(clientId int64, sequenceNum int, response Err) {
+func (kv *KVServer) updateLastSN(clientId int64, sequenceNum int, response Err) {
 	SN, ok := kv.lastWriteSN[clientId]
 	if !ok || SN < sequenceNum {
 		kv.lastWriteSN[clientId] = sequenceNum
@@ -265,7 +227,7 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 		kv.me, args.Op, args.Key, args.Value, args.ClientId, args.SequenceNum)
 
 	kv.mu.RLock()
-	res, ok := kv.haveReplied(args.ClientId, args.SequenceNum)
+	res, ok := kv.haveApplied(args.ClientId, args.SequenceNum)
 	kv.mu.RUnlock()
 	if ok {
 		reply.Status = res
@@ -296,11 +258,11 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 	select {
 	case res := <- ch:
 		reply.Status = res.Err
-		go func() {
-			kv.mu.Lock()
-			kv.updateLastRecord(args.ClientId, args.SequenceNum, reply.Status)
-			kv.mu.Unlock()
-		}()
+		// go func() {
+		// 	kv.mu.Lock()
+		// 	kv.updateLastSN(args.ClientId, args.SequenceNum, reply.Status)
+		// 	kv.mu.Unlock()
+		// }()
 	case <- time.After(ExecuteTimeout):
 		reply.Status = ErrTimeOut
 	}
@@ -362,6 +324,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	// 从 1 开始
 	kv.lastWriteSN = make(map[int64]int)
 	kv.lastWriteRes = make(map[int64]Err)
+	Debug(dError, "S#%d: Restart.\n", kv.me)
 
 	go kv.applier()
 
