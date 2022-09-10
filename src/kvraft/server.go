@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 
 	"time"
+	"bytes"
 )
 
 
@@ -32,11 +33,11 @@ type Res struct {
 
 
 type StateMachine struct {
-	memory			map[string]string
+	Memory			map[string]string
 }
 
 func(vm *StateMachine) get(key string) (string, Err) {
-	value, ok := vm.memory[key]
+	value, ok := vm.Memory[key]
 	if ok {
 		return value, OK
 	} else {
@@ -45,12 +46,12 @@ func(vm *StateMachine) get(key string) (string, Err) {
 }
 
 func(vm *StateMachine) put(key string, value string) Err {
-	vm.memory[key] = value
+	vm.Memory[key] = value
 	return OK
 }
 
 func(vm *StateMachine) append(key string, value string) Err {
-	vm.memory[key] += value
+	vm.Memory[key] += value
 	return OK
 }
 
@@ -72,6 +73,7 @@ type KVServer struct {
 	// Your definitions here.
 	SM			StateMachine
 	notifyChs 	map[int]chan *Res
+	persister 	*raft.Persister
 
 	// 用于记录已完成的写命令 (Put/Append) 的结果, 为了防止重复 apply.
 	lastWriteRes	map[int64]Err
@@ -91,7 +93,6 @@ func (kv *KVServer) getNotifyCh(index int) chan *Res {
 func (kv *KVServer) removeOldChan(index int) {
 	for k, ch := range kv.notifyChs {
 		if k < index {
-			Debug(dWarn, "server#%d remove(%d)\n", kv.me, k)
 			select {
 				case <-ch: // try to drain the channel
 				default:
@@ -115,17 +116,9 @@ func (kv *KVServer) applier() {
 				Err:	OK,
 			}
 
-			// Type	string
-			// Key		string
-			// Value	string
-			// ClientId 		int64
-			// SequenceNum		int
-			Debug(dInfo, "server#%d: applier get msg(CommandValid:%v, CommandIndex:%d, CommandTerm:%d Command:{Type:%s, Key:%s, Val:%s, CId:%d, SN:%d})\n", 
-			kv.me, msg.CommandValid, msg.CommandIndex, msg.CommandTerm, command.Type, command.Key, command.Value, command.ClientId, command.SequenceNum)
-
 			if command.Type == get_str {	// Get
 				kv.mu.RLock()
-				value, ok := kv.SM.memory[command.Key]
+				value, ok := kv.SM.Memory[command.Key]
 				kv.mu.RUnlock()
 
 				if !ok {
@@ -154,23 +147,80 @@ func (kv *KVServer) applier() {
 			}
 			
 			currentTerm, isLeader := kv.rf.GetState()
-			Debug(dInfo, "server#%d: currentTerm = %d\n", kv.me, currentTerm)
 			if isLeader && msg.CommandTerm == currentTerm {
 				kv.mu.Lock()
 				ch := kv.getNotifyCh(msg.CommandIndex)
 				kv.mu.Unlock()
 				
-				Debug(dWarn, "server#%d: ch block?\n", kv.me)
 				select {
 					case ch <- res:
 					case <- time.After(ExecuteTimeout):
 				}
-				
-				Debug(dWarn, "server#%d: no.\n", kv.me)
+			}
+
+			if kv.needSnapShot() {
+				kv.doSnapShot(msg.CommandIndex)
 			}
 		} else if msg.SnapshotValid {
-
+			if kv.rf.CondInstallSnapshot(msg.SnapshotTerm, msg.SnapshotIndex, msg.Snapshot) {
+				kv.readSnapShot(msg.Snapshot)
+			}
 		}
+	}
+}
+
+func (kv *KVServer) needSnapShot() bool {
+	kv.mu.RLock()
+	defer kv.mu.RUnlock()
+
+	threshold := 10
+	
+	// Debug(dSnap, "S#%d, check if need snap shot, maxraftstate = %d, RaftStateSize = %d\n",
+	// 	kv.me, kv.maxraftstate, kv.persister.RaftStateSize())
+
+	return kv.maxraftstate > 0 &&
+		kv.maxraftstate - kv.persister.RaftStateSize() < kv.maxraftstate/threshold
+}
+func (kv *KVServer) doSnapShot(index int) {
+	// Debug(dSnap, "S#%d, index = %d, do snap shot.\n", kv.me, index)
+
+	w := new(bytes.Buffer)
+	e :=  labgob.NewEncoder(w)
+
+	kv.mu.RLock()
+	// e.Encode(kv.SM)
+	e.Encode(kv.SM.Memory)
+	e.Encode(kv.lastWriteRes)
+	e.Encode(kv.lastWriteSN)
+	kv.mu.RUnlock()
+
+	kv.rf.Snapshot(index, w.Bytes())
+}
+
+func (kv *KVServer) readSnapShot(snapshot []byte) {
+	if snapshot == nil || len(snapshot) < 1 {
+		return
+	}
+
+	// Debug(dSnap, "S#%d, read snap shot.\n", kv.me)
+
+	r := bytes.NewBuffer(snapshot)
+	d := labgob.NewDecoder(r)
+
+	// var SM StateMachine
+	var Memory map[string]string
+	var lastWriteRes map[int64]Err
+	var lastWriteSN map[int64]int
+
+	// if d.Decode(&SM) != nil ||
+	if d.Decode(&Memory) != nil ||
+	d.Decode(&lastWriteRes) != nil ||
+	d.Decode(&lastWriteSN) != nil {
+		Debug(dError, "S#%d, Decode error.\n", kv.me)
+	} else {
+		kv.mu.Lock()
+		kv.SM.Memory, kv.lastWriteRes, kv.lastWriteSN = Memory, lastWriteRes, lastWriteSN
+		kv.mu.Unlock()
 	}
 }
 
@@ -196,10 +246,6 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 		case <- time.After(ExecuteTimeout):
 			reply.Status, reply.Value = ErrTimeOut, ""
 	}
-
-	// if kv.persister.RaftStateSize() > kv.maxraftstate {
-
-	// }
 }
 
 
@@ -219,13 +265,9 @@ func (kv *KVServer) updateLastSN(clientId int64, sequenceNum int, response Err) 
 		kv.lastWriteSN[clientId] = sequenceNum
 		kv.lastWriteRes[clientId] = response
 	}
-	
 }
 
 func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
-	Debug(dLog, "server#%d, %s(key:%s,val:%s,CID:%d,SN:%d)\n", 
-		kv.me, args.Op, args.Key, args.Value, args.ClientId, args.SequenceNum)
-
 	kv.mu.RLock()
 	res, ok := kv.haveApplied(args.ClientId, args.SequenceNum)
 	kv.mu.RUnlock()
@@ -248,7 +290,6 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 		
 		return
 	}
-	Debug(dCommit, "server#%d Start(%v), index:%d\n", kv.me, command, index)
 
 	kv.mu.Lock()
 	// kv.removeOldChan(index)
@@ -318,13 +359,17 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.rf = raft.Make(servers, me, persister, kv.applyCh)
 
 	// You may need initialization code here.
+	kv.persister = persister
 	kv.SM = *newStateMachine()
 	kv.notifyChs = make(map[int]chan *Res)
 
 	// 从 1 开始
 	kv.lastWriteSN = make(map[int64]int)
 	kv.lastWriteRes = make(map[int64]Err)
-	Debug(dError, "S#%d: Restart.\n", kv.me)
+
+	kv.readSnapShot(kv.persister.ReadSnapshot())
+
+	// Debug(dInfo, "S#%d: Start.\n", kv.me)
 
 	go kv.applier()
 

@@ -18,11 +18,8 @@ const (
 	candidate 				int = 1
 	follower 				int = 2
 
-	election_timeout		int32 = 150	// 150 - 300
+	election_timeout		int32 = 250	// 250 - 350
 	append_entries_timeout	int32 = 100
-
-	// election_timeout		int32 = 100
-	// append_entries_timeout	int32 = 70
 )
 
 // for apply
@@ -48,25 +45,18 @@ type log_api struct {
 	// head_ind == rf.snapShotIndex
 	head_ind	int
 	log_len		int
-	rwmu		sync.RWMutex
 }
 func (la *log_api) init() {
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
 	la.log = make([]LogEntry, 1)
 	la.head_ind = 0
 	la.log_len = 1
 }
 func (la *log_api) init_log(log []LogEntry, head_ind int) {
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
 	la.log = log
 	la.log_len = len(log)
 	la.head_ind = head_ind
 }
 func (la *log_api) at(ind int) LogEntry {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	if ind < la.head_ind {
 		panic("log_api.at(error): too old log.")
 	}
@@ -76,8 +66,6 @@ func (la *log_api) at(ind int) LogEntry {
 	return la.log[ind - la.head_ind]
 }
 func (la *log_api) index(ind int) int {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	if ind < la.head_ind {
 		panic("log_api.index(error): too old log.")
 	}
@@ -87,18 +75,12 @@ func (la *log_api) index(ind int) int {
 	return ind - la.head_ind
 }
 func (la *log_api) last_index() int {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	return la.head_ind + la.log_len - 1
 }
 func (la *log_api) last_term() int {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	return la.log[la.log_len-1].Term
 }
 func (la *log_api) push_back(entry LogEntry) {
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
 	if la.log_len < len(la.log) {
 		la.log[la.log_len] = entry
 	} else {
@@ -107,8 +89,6 @@ func (la *log_api) push_back(entry LogEntry) {
 	la.log_len++;
 }
 func (la *log_api) real_log() []LogEntry {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	ret := make([]LogEntry, la.log_len)
 	for i := 0; i < la.log_len; i++ {
 		ret[i] = la.log[i]
@@ -117,27 +97,30 @@ func (la *log_api) real_log() []LogEntry {
 }
 func (la *log_api) merge(start int, entries []LogEntry) {
 	tmp_s := la.index(start)
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
+
 	if tmp_s > la.log_len {
 		panic("log_api.merge(error): too new log.")
 	}
+
+	change_flag := false
 	for i := 0; i < len(entries); i++ {
-		if(tmp_s + i < la.log_len) {
-			la.log[tmp_s + i] = entries[i]
-		} else {
+		if tmp_s + i >= la.log_len {
 			la.push_back(entries[i])
-			// la.log = append(la.log, entries[i])
+			change_flag = true
+		} else if la.log[tmp_s + i] != entries[i] {
+			la.log[tmp_s + i] = entries[i]
+			change_flag = true
 		}
 	}
-	la.log_len = tmp_s + len(entries)
+
+	if change_flag {
+		la.log_len = tmp_s + len(entries)
+	}
 }
 func (la *log_api) logDebug(peer int) {
 	
 }
 func (la *log_api) findFirst(term int) int {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	l, r := la.head_ind, la.last_index()
 	for l < r {
 		m := (l + r) / 2
@@ -155,8 +138,6 @@ func (la *log_api) findFirst(term int) int {
 	return -1
 }
 func (la *log_api) findLast(term int) int {
-	// la.rwmu.RLock()
-	// defer la.rwmu.RUnlock()
 	l, r, ret := la.head_ind, la.last_index(), -1
 	for l < r {
 		m := (l + r) / 2
@@ -172,8 +153,6 @@ func (la *log_api) findLast(term int) int {
 }
 
 func (la *log_api) logCompress(ind int) {
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
 	if ind < la.head_ind {
 		panic("log_api.logCompress(error): too old compress.")
 	}
@@ -188,7 +167,6 @@ func (la *log_api) logCompress(ind int) {
 }
 
 func (la *log_api) installSnapshot(lastIncludedTerm int, lastIncludedIndex int) {
-	// TODO: 上锁
 	if lastIncludedIndex <= la.last_index() && 
 	lastIncludedTerm == la.at(lastIncludedIndex).Term {
 		la.logCompress(lastIncludedIndex)
@@ -209,11 +187,8 @@ func (la *log_api) shrinkLogsArray() {
 	// 	la.log = newLogs
 	// }
 }
-func (la *log_api) cutLog(ind int) {
-	// log[:ind]
+func (la *log_api) cutLog(ind int) {	// log[:ind]
 	// 弃用
-	// la.rwmu.Lock()
-	// defer la.rwmu.Unlock()
 	// if ind < la.head_ind {
 	// 	panic("log_api.cutLog(error): too old cut.")
 	// }
@@ -272,13 +247,13 @@ func (rf *Raft) applier() {
 			rf.applyCond.Wait()
 		}
 		rf.lastApplied++
+		Debug(dCommit, "S%d last_index = %d, commitIndex = %d, lastApplied = %d\n", rf.me, rf.logapi.last_index(), rf.commitIndex, rf.lastApplied)
 		tmpApplyMsg := ApplyMsg{
 			CommandValid: 	true,
 			Command:		rf.logapi.at(rf.lastApplied).Data,
 			CommandIndex:	rf.lastApplied,
 		}
 		// Debug(dCommit, "S%d(T:%d), apply(log[%d] = %v)\n", rf.me, rf.currentTerm, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
-		// DPrintf("SERVER #%d: apply(log[%d] = (%v))\n", rf.me, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
 		rf.mu.Unlock()
 		rf.applyChan <- tmpApplyMsg
 	}
@@ -333,15 +308,9 @@ func (rf *Raft) timerReset(timeout int32) {
 	}
 
 	rf.timer.Reset(time.Duration(timeout) * time.Millisecond)
-
-	// if eTimeout {
-	// 	rf.timer.Reset(time.Duration(election_timeout + rand.Int31() % 151) * time.Millisecond)
-	// } else {
-	// 	rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
-	// }
 }
 func genETimeout() int32 {
-	return election_timeout + rand.Int31() % 151
+	return election_timeout + rand.Int31() % 100
 }
 
 // change state (before the function)
@@ -370,16 +339,11 @@ func (rf *Raft) turn2Follower(vot int, cur int, resetTimer bool) {
 func (rf *Raft) turn2Candidate() {
 	rf.state = candidate
 	// Increment currentTerm
-	rf.currentTerm ++
+	rf.currentTerm++
 	// Vote for self
 	rf.yes_vote = 1
 	rf.votedFor = rf.me
 	rf.needPersist = true
-
-	// Reset election timer
-	Detmp := genETimeout()
-	// Debug(dTimer, "S%d(T:%d) turn to candidate. timer(%d)\n", rf.me, rf.currentTerm, Detmp)
-	rf.timerReset(Detmp)
 
 	for i := 0; i < len(rf.peers); i++ {
 		if i != rf.me {
@@ -398,10 +362,15 @@ func (rf *Raft) turn2Candidate() {
 			}(i)
 		}
 	}
+
+	// Reset election timer
+	Detmp := genETimeout()
+	// Debug(dTimer, "S%d(T:%d) turn to candidate. timer(%d)\n", rf.me, rf.currentTerm, Detmp)
+	rf.timerReset(Detmp)
 }
 
 func (rf *Raft) turn2Leader() {
-	// Debug(dLeader, "S%d(T:%d) turn to leader\n", rf.me, rf.currentTerm)
+	Debug(dLeader, "S%d(T:%d) turn to leader\n", rf.me, rf.currentTerm)
 	// Debug(dVote, "S%d(T:%d) get %d votes, become leader.\n", rf.me, rf.currentTerm, rf.yes_vote)
 	rf.state = leader
 	nextIndex_ := rf.logapi.last_index() + 1
@@ -411,6 +380,7 @@ func (rf *Raft) turn2Leader() {
 	}
 
 	rf.broadcastEntries(true)
+	rf.timerReset(append_entries_timeout)
 }
 
 
@@ -484,24 +454,23 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		rf.mu.Unlock()
 		return
 	}
-	rf.mu.Unlock()
-	// 保证 args.Term >= rf.currentTerm
-
+	// rf.mu.Unlock()
 	// 
 	// 改变 state
+	// 保证 args.Term >= rf.currentTerm
 	// 
-	rf.mu.Lock()
+	// rf.mu.Lock()
 	if args.Term > rf.currentTerm {
-		rf.turn2Follower(-1, args.Term, true)
+		rf.turn2Follower(-1, args.Term, true)	// 争议
 	} else {// args.Term == rf.currentTerm
 		switch rf.state {
 		case leader:
 			// Election Safety 性质保证 args.Term != rf.currentTerm
 			// 故流程不应该走到这里
 		case candidate:
-			rf.turn2Follower(rf.me, args.Term, true)
+			rf.turn2Follower(rf.me, args.Term, true)	// 争议
 		case follower:
-			rf.timerReset(genETimeout())
+			rf.timerReset(genETimeout())	// 争议
 		}
 	}
 
@@ -540,7 +509,7 @@ func (rf *Raft) sendInstallSnapshot(server int, args *InstallSnapshotArgs, reply
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 	if reply.Term > rf.currentTerm {
-		rf.turn2Follower(-1, reply.Term, true)
+		rf.turn2Follower(-1, reply.Term, false)	// 争议
 		return
 	}
 
@@ -619,11 +588,11 @@ func (rf *Raft) isUpToDate(lastLogIndex int, lastLogTerm int) (bool) {
 }
 
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
-	if rf.killed() {
-		reply.Term = -1
-		reply.VoteGranted = false
-		return
-	}
+	// if rf.killed() {
+	// 	reply.Term = -1
+	// 	reply.VoteGranted = false
+	// 	return
+	// }
 	
 	// Reply false if term < currentTerm (&5.1)
 	rf.mu.Lock()
@@ -656,7 +625,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.turn2Follower(args.CandidateId, args.Term, true)
 			} else {
 				reply.VoteGranted = false
-				rf.turn2Follower(-1, args.Term, true)	// 争议
+				rf.turn2Follower(-1, args.Term, false)	// 争议
 			}
 		} else {
 			reply.Term = rf.currentTerm
@@ -670,7 +639,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.turn2Follower(args.CandidateId, args.Term, true)
 			} else {
 				reply.VoteGranted = false
-				rf.turn2Follower(-1, args.Term, true)	// 争议
+				rf.turn2Follower(-1, args.Term, false)	// 争议
 			}
 		} else {
 			reply.Term = rf.currentTerm
@@ -684,7 +653,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 				rf.turn2Follower(args.CandidateId, args.Term, true)
 			} else {
 				reply.VoteGranted = false
-				rf.turn2Follower(-1, args.Term, true)	// 争议
+				rf.turn2Follower(-1, args.Term, false)	// 争议
 			}
 		} else if args.Term == rf.currentTerm {
 			reply.Term = args.Term
@@ -699,7 +668,6 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 			} else {
 				reply.VoteGranted = false
 			}
-			
 		} else {
 			reply.Term = rf.currentTerm
 			// SOMETHING ERROR
@@ -728,9 +696,6 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	rf.mu.Unlock()
 
 	if !rf.peers[server].Call("Raft.RequestVote", args, reply) {
-		// 内置重试
-		// 真的有必要吗?
-		// TODO: 删除重试
 		// reply = &RequestVoteReply{}
 		// go rf.sendRequestVote(server, args, reply)
 		return
@@ -739,21 +704,20 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 
-	Debug(dVote, "S%d(T:%d) voted by S%d(T:%d)? %v.\n", rf.me, rf.currentTerm, server, reply.Term, reply.VoteGranted)
-
 	if reply.Term > rf.currentTerm {// reply.Success must be false
-		rf.turn2Follower(-1, reply.Term, true)
+		rf.turn2Follower(-1, reply.Term, false)
 		return
 	}
 
+	Debug(dVote, "S%d(T:%d, AT:%d, S:%d) voted by S%d(T:%d)? %v.\n", rf.me, rf.currentTerm, args.Term, rf.state, server, reply.Term, reply.VoteGranted)
 	// rpc 返回后, 修改状态之前, 必须检查 currentTerm 和 state
 	if args.Term == rf.currentTerm && 
 	rf.state == candidate && 
 	reply.VoteGranted {
 		rf.yes_vote++
+		Debug(dVote, "S%d's yes_vote = %d\n", rf.me, rf.yes_vote)
 		if rf.yes_vote > len(rf.peers)/2 {
 			rf.turn2Leader()
-			return
 		}
 	} 
 }
@@ -894,7 +858,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 
 	if reply.Term > rf.currentTerm {
 		// reply.Success 一定是 false
-		rf.turn2Follower(-1, reply.Term, true)
+		rf.turn2Follower(-1, reply.Term, false)
 		return
 	}
 
@@ -920,21 +884,6 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 
 
 
-
-//
-// the service using Raft (e.g. a k/v server) wants to start
-// agreement on the next command to be appended to Raft's log. if this
-// server isn't the leader, returns false. otherwise start the
-// agreement and return immediately. there is no guarantee that this
-// command will ever be committed to the Raft log, since the leader
-// may fail or lose an election. even if the Raft instance has been killed,
-// this function should return gracefully.
-//
-// the first return value is the index that the command will appear at
-// if it's ever committed. the second return value is the current
-// term. the third return value is true if this server believes it is
-// the leader.
-//
 func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	if rf.killed() {
 		return -1, -1, false
@@ -944,6 +893,8 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	index := rf.logapi.last_index() + 1
 	term := rf.currentTerm
 	isLeader := (rf.state == leader)
+
+	Debug(dLog, "S%d: Start(%v)\n", rf.me, command)
 
 	if isLeader {
 		newLogEntry := LogEntry{
@@ -1017,8 +968,8 @@ func (rf *Raft) ticker() {
 		switch rf.state {
 		case leader:
 			// rf.timer.Reset(time.Duration(append_entries_timeout) * time.Millisecond)
-			// DPrintf("#SERVER %d: heartbeat", rf.me)
 			rf.broadcastEntries(true)
+			rf.timerReset(append_entries_timeout)
 		case candidate:
 			rf.turn2Candidate()
 		case follower:
@@ -1050,7 +1001,6 @@ func (rf *Raft) replicator(peer int) {
 }
 
 func (rf *Raft) replicateEntries(peer int) {
-	// DPrintf("replicateEntries(%d)\n", peer)
 	rf.mu.Lock()
 	if rf.nextIndex[peer] - 1 < rf.snapShotIndex {
 		args := rf.genInstallSnapshotArgs()
@@ -1077,7 +1027,8 @@ func (rf *Raft) replicateEntries(peer int) {
 }
 func (rf *Raft) broadcastEntries(isHeartBeat bool) {
 	// Debug(dTimer, "S%d(T:%d)(state = %d) broadcast entries. reset timer(%d)\n", rf.me, rf.currentTerm, rf.state, append_entries_timeout)
-	rf.timerReset(append_entries_timeout)
+	
+	// rf.timerReset(append_entries_timeout)	// 争议
 	
 	for i := 0; i < len(rf.peers); i++ {
 		if i == rf.me {
@@ -1093,6 +1044,7 @@ func (rf *Raft) broadcastEntries(isHeartBeat bool) {
 }
 
 func (rf *Raft) test_timer() {
+	// 无用
 	test_timer := time.NewTimer(100 * time.Millisecond)
 	for rf.killed() == false {
 		<- test_timer.C
@@ -1102,8 +1054,7 @@ func (rf *Raft) test_timer() {
 
 func Make(peers []*labrpc.ClientEnd, me int,
 	persister *Persister, applyCh chan ApplyMsg) *Raft {
-	
-	// TODO: 1. 修改定时器(必做)(已完成 80%); 2. 加入 no-op 功能
+
 	DebugInit()
 	rand.Seed(makeSeed())
 

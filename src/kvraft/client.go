@@ -32,7 +32,7 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	ck.id = nrand()
 	ck.sequenceNum = 0
 	ck.leaderId = 0
-	Debug(dClient, "MakeClient: id = %v\n", ck.id)
+	// Debug(dClient, "MakeClient: id = %v\n", ck.id)
 
 	return ck
 }
@@ -93,7 +93,7 @@ func (ck *Clerk) PutAppend(key string, value string, op string) {
 	// 一个 command 对应一个 sequenceNum, 故后面的重试全部使用这一个 SequenceNum
 	ck.sequenceNum++
 	
-	Debug(dClient, "client#%v %s(key: %s, value: %s, SN: %d)\n", ck.id, op, key, value, ck.sequenceNum)
+	// Debug(dClient, "client#%v %s(key: %s, value: %s, SN: %d)\n", ck.id, op, key, value, ck.sequenceNum)
 	args := PutAppendArgs {
 		Key: 		key,
 		Value:		value,
@@ -115,7 +115,7 @@ func (ck *Clerk) PutAppend(key string, value string, op string) {
 			ck.leaderId = (ck.leaderId + 1) % len(ck.servers)
 			continue
 		}
-		Debug(dClient, "client#%v, SN:%d, leaderId:%d, reply:%v\n", ck.id, ck.sequenceNum, ck.leaderId, reply)
+		// Debug(dClient, "client#%v, SN:%d, leaderId:%d, reply:%v\n", ck.id, ck.sequenceNum, ck.leaderId, reply)
 		if reply.Status == OK {
 			break
 		} else if reply.Status == ErrWrongLeader || reply.Status == ErrTimeOut {

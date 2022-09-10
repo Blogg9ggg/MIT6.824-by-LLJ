@@ -571,6 +571,18 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 	rf.logapi.logCompress(rf.snapShotIndex)
 
 	rf.persister.SaveStateAndSnapshot(rf.encodeState(), snapshot)
+
+	// args := rf.genInstallSnapshotArgs()
+	// reply := InstallSnapshotReply{}
+	// for peer := 0; peer < len(rf.peers); peer++ {
+	// 	if peer != rf.me && 
+	// 	rf.state == leader &&
+	// 	rf.currentTerm == args.Term &&
+	// 	rf.nextIndex[peer] - 1 < rf.snapShotIndex {
+	// 		reply = InstallSnapshotReply{}
+	// 		go rf.sendInstallSnapshot(peer, &args, &reply)
+	// 	}
+	// }
 }
 
 
