@@ -26,6 +26,7 @@ const (
 type ApplyMsg struct {
 	CommandValid bool
 	Command      interface{}
+	CommandTerm	 int
 	CommandIndex int
 
 	// for snap shot
@@ -252,9 +253,12 @@ func (rf *Raft) applier() {
 			CommandValid: 	true,
 			Command:		rf.logapi.at(rf.lastApplied).Data,
 			CommandIndex:	rf.lastApplied,
+			CommandTerm:	rf.logapi.at(rf.lastApplied).Term,
 		}
 		// Debug(dCommit, "S%d(T:%d), apply(log[%d] = %v)\n", rf.me, rf.currentTerm, tmpApplyMsg.CommandIndex, tmpApplyMsg.Command)
 		rf.mu.Unlock()
+
+		Debug(dCommit, "S%d tmpApplyMsg(%v) -> chan\n", rf.me, tmpApplyMsg)
 		rf.applyChan <- tmpApplyMsg
 	}
 }
@@ -893,6 +897,8 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	index := rf.logapi.last_index() + 1
 	term := rf.currentTerm
 	isLeader := (rf.state == leader)
+
+	Debug(dLog, "S%d: Start(%v)\n", rf.me, command)
 
 	if isLeader {
 		newLogEntry := LogEntry{
